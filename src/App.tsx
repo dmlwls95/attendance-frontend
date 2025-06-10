@@ -12,7 +12,6 @@ import UserManagement from './pages/UserManagement';
 //import MonthlySummary from './pages/MonthlySummary'
 
 function App() {
-  
 
   return (
     <BrowserRouter>

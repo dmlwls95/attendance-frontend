@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import APIConfig from "../configs/API.config"
 type userResponse = {
     name: string,
     email: string
 }
 type AttendanceResponse = {
+    id: number,
     name: string,
     email: string,
     date : string,
@@ -20,6 +21,12 @@ export default function AttendanceHistory()
     const [users, setUsers] = useState<userResponse[] | null >(null);
     const [selectedFrom, setSelectedFrom] = useState<string | null>(null);
     const [selectedTo, setSelectedTo] = useState<string | null>(null);
+    const [history, setHistory ] = useState<AttendanceResponse[] | null>(null);
+    const [editModalData, setEditModalData] = useState<AttendanceResponse | null | undefined>(null);
+    const [editModalFormData, setEditModalFormData ] = useState<AttendanceResponse | null>(null);
+
+
+    const editModal = useRef<HTMLDialogElement | null>(null);
 
 
     useEffect(() => {
@@ -54,6 +61,7 @@ export default function AttendanceHistory()
             if(selectedFrom && selectedTo && user)
             {
                 const data = await fetchAttendanceHistoryByEmail(user.email, selectedFrom, selectedTo);
+                
                 setHistory(data);
             }else if(selectedFrom && selectedTo)
             {
@@ -66,11 +74,31 @@ export default function AttendanceHistory()
         }
         
     }
-    
-    
-    const [history, setHistory ] = useState<AttendanceResponse[] | null>(null);
 
+    //수정 모달 오픈 전 초기 데이터 셋업업
+    const onOpenEditModal = (id: number) => {
+        const target = history?.find((value) =>  value.id === id );
+        if(target)
+        {
+            setEditModalData(target);
+            setEditModalFormData({...target});
+            editModal.current?.showModal();
+        }
+    }
 
+    //수정 버튼
+    const onClickEdit = async () => {
+        if(editModal.current?.open)
+        {
+            if(editModalData)
+            {
+                await putAttendanceHistory(editModalData);
+            }
+            editModal.current?.close();
+        }
+    }
+    
+    //csv 출력
     const handleExport = async () =>{
         if(selectedFrom && selectedTo)
         {
@@ -85,6 +113,8 @@ export default function AttendanceHistory()
     return(
         <div>
             
+
+
             <h3>기간별 조회</h3>
             {/*날짜 입력은 <input type="date" /> 또는 react-day-picker */}
             <div className="grid grid-cols-3">
@@ -126,7 +156,7 @@ export default function AttendanceHistory()
 
             {/* 헤더 */}
             <li className="list-row font-semibold text-sm border-b py-2">
-                <div className="grid grid-cols-7 gap-20 text-center">
+                <div className="grid grid-cols-9 gap-20 text-center">
                 <div>이름</div>
                 <div>일자</div>
                 <div>출근 시간</div>
@@ -134,6 +164,8 @@ export default function AttendanceHistory()
                 <div>총 근무 시간</div>
                 <div>지각</div>
                 <div>조퇴</div>
+                <div>수정</div>
+                <div>삭제</div>
                 </div>
             </li>
 
@@ -141,21 +173,123 @@ export default function AttendanceHistory()
             {
                 history?.map((record, idx) => (
                 <li className="list-row text-sm border-b py-2" key={idx}>
-                    <div className="grid grid-cols-7 gap-4 text-center">
+                    <div className="grid grid-cols-9 gap-4 text-center">
                     <div>{record.name}</div>    
                     <div>{record.date}</div>
-                    <div>{record.clockIn}</div>
-                    <div>{record.clockOut}</div>
+                    <div>{formatTimeForInput(record.clockIn)}</div>
+                    <div>{formatTimeForInput(record.clockOut)}</div>
                     <div>{record.totalHours}</div>
                     <div>{record.isLate ? 'O' : '-'}</div>
                     <div>{record.isLeftEarly ? 'O' : '-'}</div>
+                    <div>
+                        <button className="btn" onClick={()=>onOpenEditModal(record.id)}>🖊️</button>
+
+
+                        <dialog ref={editModal} className="modal">
+                            <div className="modal-box">
+
+
+
+                                <h3 className="font-bold text-lg">기록 수정</h3>
+                                <fieldset className="fieldset">
+                                    <legend className="fieldset-legend">날짜</legend>
+                                        <input type="date" className="input"
+                                        value={editModalFormData?.date || ""}
+                                        onChange={(e) => setEditModalFormData(prev => prev && ({ ...prev, date: e.target.value }))}
+                                        />
+                                </fieldset>
+                                <fieldset className="fieldset">
+                                    <legend className="fieldset-legend">출근 기록</legend>
+                                        <input type="time" className="input"
+                                        value={editModalFormData?.clockIn ? formatTimeForInput(editModalFormData.clockIn) : ""}
+                                        onChange={(e) => {
+                                            const [hours, minutes] = e.target.value.split(":");
+                                            setEditModalFormData((prev) => {
+                                            if (!prev || !prev.clockIn) return prev;
+
+                                            const date = new Date(prev.clockIn);
+                                            date.setHours(Number(hours));
+                                            date.setMinutes(Number(minutes));
+
+                                            return {
+                                                ...prev,
+                                                clockIn: date.toISOString(), // or custom formatting if needed
+                                            };
+                                            });
+                                        }}
+                                        />
+                                    {/*<p className="label">Optional</p>*/}
+                                </fieldset>
+                                <fieldset className="fieldset">
+                                    <legend className="fieldset-legend">퇴근 기록</legend>
+                                        <input type="time" className="input"
+                                        value={editModalFormData?.clockOut ? formatTimeForInput(editModalFormData.clockOut) : ""}
+                                        onChange={(e) => {
+                                            const [hours, minutes] = e.target.value.split(":");
+                                            setEditModalFormData((prev) => {
+                                            if (!prev || !prev.clockOut) return prev;
+
+                                            const date = new Date(prev.clockOut);
+                                            date.setHours(Number(hours));
+                                            date.setMinutes(Number(minutes));
+
+                                            return {
+                                                ...prev,
+                                                clockOut: date.toISOString(), // or custom formatting if needed
+                                            };
+                                            });
+                                        }}
+                                        />
+                                    {/*<p className="label">Optional</p>*/}
+                                </fieldset>
+                                <fieldset className="fieldset">
+                                    <legend className="fieldset-legend">지각 여부</legend>
+                                        <input type="checkbox" checked={editModalData?.isLate == 1} className="toggle" 
+                                        onChange={(e) => setEditModalFormData(prev => prev && ({ ...prev, isLate: e.target.value ? 1 : 0 }))}
+                                        />
+                                    {/*<p className="label">Optional</p>*/}
+                                </fieldset>
+                                <fieldset className="fieldset">
+                                    <legend className="fieldset-legend">조퇴 여부</legend>
+                                        <input type="checkbox" checked={editModalData?.isLeftEarly == 1}  className="toggle" 
+                                        onChange={(e) => setEditModalFormData(prev => prev && ({ ...prev, isLeftEarly: e.target.value ? 1 : 0 }))}
+                                        />
+                                    {/*<p className="label">Optional</p>*/}
+                                </fieldset>
+
+                                <button className="btn" onClick={onClickEdit}>수정</button>
+                                <button className="btn">종료</button>
+
+
+
+                            </div>
+                            <form method="dialog" className="modal-backdrop">
+                                <button>close</button>
+                            </form>
+                        </dialog>
+                    
+                    </div>
+                    <div><button className="btn">🗑️</button></div>
                     </div>
                 </li>
                 ))
             }
+
+            
             </ul>
         </div>
     )
+}
+
+function formatTimeForInput(datetimeStr: string): string {
+  try {
+    const date = new Date(datetimeStr);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  } catch {
+    return "";
+  }
 }
 
 async function fetchAttendanceHistory(from: string, to: string): Promise<AttendanceResponse[]> {
@@ -231,6 +365,31 @@ async function fetchAllUsersEmailAndName() : Promise<userResponse[]> {
         }
         return await response.json();
 }
+
+
+async function putAttendanceHistory(request : AttendanceResponse ) {
+    console.log(JSON.stringify(request));
+      const token = localStorage.getItem("token");
+        const response = await fetch(
+          `${APIConfig}/admin/attendance/history` ,{
+            method : "PUT",
+            headers: {
+              "Content-Type":"application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            credentials: "include",
+            body: JSON.stringify(request)
+          }      
+        );
+        
+        if(!response.ok)
+        {
+          throw new Error("조회 실패");
+        }
+        return await response.json();
+}
+
+
 
 async function fetchAttendanceHistoryByEmail(email : string ,from: string, to: string): Promise<AttendanceResponse[]> {
     const token = localStorage.getItem("token");
