@@ -7,7 +7,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './pages/AdminLayout';
 import MonthlySummary from './pages/MonthlySummary';
 import AttendanceHistory from './pages/AttendanceHistory';
-import UserDetail from './pages/UserDetail';
+import HomePage from './pages/HomePage';
+//import UserDetail from './pages/UserDetail';
 import UserManagement from './pages/UserManagement';
 //import MonthlySummary from './pages/MonthlySummary'
 
@@ -18,11 +19,17 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
           
-          <Route path="/admin" element={
+            <Route path="/admin" element={
             <ProtectedRoute requiredRole="ADMIN">
               <AdminLayout />
             </ProtectedRoute>
             }>
+            <Route path="/admin/home" element={
+            <ProtectedRoute requiredRole="ADMIN">
+              <HomePage />
+            </ProtectedRoute>
+            }/>
+
             <Route path="/admin/monthlysummary" element={
               <ProtectedRoute requiredRole="ADMIN">
               <MonthlySummary />
@@ -33,11 +40,11 @@ function App() {
               <AttendanceHistory />
             </ProtectedRoute>
             }/>
-            <Route path="/admin/userdetail" element={
+            {/*<Route path="/admin/userdetail" element={
               <ProtectedRoute requiredRole="ADMIN">
               <UserDetail />
             </ProtectedRoute>
-            }/>
+            }/>*/}
             <Route path="/admin/usermanagement" element={
               <ProtectedRoute requiredRole="ADMIN">
               <UserManagement />

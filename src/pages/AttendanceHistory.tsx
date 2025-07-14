@@ -15,6 +15,15 @@ type AttendanceResponse = {
     isLeftEarly : number,
     totalHours : number
 }
+
+type AttendanceUpdateRequest = {
+    id: number,
+    date : string,
+    clockIn : string,
+    clockOut : string,
+    isLate : number,
+    isLeftEarly : number,
+}
 export default function AttendanceHistory()
 {
     const [user, setUser] = useState<userResponse | null>(null);
@@ -22,8 +31,8 @@ export default function AttendanceHistory()
     const [selectedFrom, setSelectedFrom] = useState<string | null>(null);
     const [selectedTo, setSelectedTo] = useState<string | null>(null);
     const [history, setHistory ] = useState<AttendanceResponse[] | null>(null);
-    const [editModalData, setEditModalData] = useState<AttendanceResponse | null | undefined>(null);
-    const [editModalFormData, setEditModalFormData ] = useState<AttendanceResponse | null>(null);
+    const [editModalData, setEditModalData] = useState<AttendanceUpdateRequest | null | undefined>(null);
+    const [editModalFormData, setEditModalFormData ] = useState<AttendanceUpdateRequest | null>(null);
 
 
     const editModal = useRef<HTMLDialogElement | null>(null);
@@ -80,8 +89,16 @@ export default function AttendanceHistory()
         const target = history?.find((value) =>  value.id === id );
         if(target)
         {
-            setEditModalData(target);
-            setEditModalFormData({...target});
+            const data : AttendanceUpdateRequest ={
+                id: target.id,
+                date: target.date,
+                clockIn: target.clockIn,
+                clockOut: target.clockOut,
+                isLate: target.isLate,
+                isLeftEarly: target.isLeftEarly
+            }
+            setEditModalData(data);
+            setEditModalFormData({...data});
             editModal.current?.showModal();
         }
     }
@@ -90,9 +107,9 @@ export default function AttendanceHistory()
     const onClickEdit = async () => {
         if(editModal.current?.open)
         {
-            if(editModalData)
+            if(editModalFormData)
             {
-                await putAttendanceHistory(editModalData);
+                await putAttendanceHistory(editModalFormData);
             }
             editModal.current?.close();
         }
@@ -173,12 +190,12 @@ export default function AttendanceHistory()
             {
                 history?.map((record, idx) => (
                 <li className="list-row text-sm border-b py-2" key={idx}>
-                    <div className="grid grid-cols-9 gap-4 text-center">
+                    <div className="grid grid-cols-9 gap-20 text-center">
                     <div>{record.name}</div>    
                     <div>{record.date}</div>
                     <div>{formatTimeForInput(record.clockIn)}</div>
                     <div>{formatTimeForInput(record.clockOut)}</div>
-                    <div>{record.totalHours}</div>
+                    <div>{record.totalHours.toFixed(2)}</div>
                     <div>{record.isLate ? 'O' : '-'}</div>
                     <div>{record.isLeftEarly ? 'O' : '-'}</div>
                     <div>
@@ -207,13 +224,13 @@ export default function AttendanceHistory()
                                             setEditModalFormData((prev) => {
                                             if (!prev || !prev.clockIn) return prev;
 
-                                            const date = new Date(prev.clockIn);
+                                            const date = new Date(prev.clockIn)
                                             date.setHours(Number(hours));
                                             date.setMinutes(Number(minutes));
 
                                             return {
                                                 ...prev,
-                                                clockIn: date.toISOString(), // or custom formatting if needed
+                                                clockIn: formatToLocalDateTimeString(date), // or custom formatting if needed
                                             };
                                             });
                                         }}
@@ -235,7 +252,7 @@ export default function AttendanceHistory()
 
                                             return {
                                                 ...prev,
-                                                clockOut: date.toISOString(), // or custom formatting if needed
+                                                clockOut: formatToLocalDateTimeString(date), // or custom formatting if needed
                                             };
                                             });
                                         }}
@@ -280,6 +297,15 @@ export default function AttendanceHistory()
         </div>
     )
 }
+const formatToLocalDateTimeString = (date: Date) => {
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+  return `${yyyy}-${MM}-${dd}T${hh}:${mm}:${ss}`;
+};
 
 function formatTimeForInput(datetimeStr: string): string {
   try {
@@ -367,8 +393,11 @@ async function fetchAllUsersEmailAndName() : Promise<userResponse[]> {
 }
 
 
-async function putAttendanceHistory(request : AttendanceResponse ) {
-    console.log(JSON.stringify(request));
+async function putAttendanceHistory(request : AttendanceUpdateRequest ) {
+    //request.date = new Date(request.date).toISOString();
+    request.clockIn = removeZ(request.clockIn);
+    console.log(request);
+    try {
       const token = localStorage.getItem("token");
         const response = await fetch(
           `${APIConfig}/admin/attendance/history` ,{
@@ -386,7 +415,15 @@ async function putAttendanceHistory(request : AttendanceResponse ) {
         {
           throw new Error("조회 실패");
         }
-        return await response.json();
+        return await response.json();  
+    } catch (error) {
+        console.error(error);
+    }
+      
+}
+
+function removeZ(dateStr: string): string {
+  return dateStr.replace(/\.000Z$/, ''); // "2025-06-11T00:50:20"
 }
 
 

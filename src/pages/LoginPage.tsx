@@ -26,7 +26,7 @@ export default function LoginPage()
             
             if(data.role === "ADMIN")
             {
-                navigate("/admin");
+                navigate("/admin/home");
                 
             }else{
                 navigate("/user");
