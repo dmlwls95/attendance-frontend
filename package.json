@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.10.0",
+=======
+>>>>>>> 8932ae1c1ca3ff2e63b5dd105654243ac5a9002b
     "daisyui": "^5.0.38",
     "react": "^19.1.0",
     "react-day-picker": "^9.7.0",
