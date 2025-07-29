@@ -11,10 +11,7 @@ import HomePage from './pages/HomePage';
 //import UserDetail from './pages/UserDetail';
 import UserManagement from './pages/UserManagement';
 //import MonthlySummary from './pages/MonthlySummary'
-<<<<<<< HEAD
 import BoardList from './pages/BoardList';
-=======
->>>>>>> 8932ae1c1ca3ff2e63b5dd105654243ac5a9002b
 
 function App() {
 
@@ -44,20 +41,12 @@ function App() {
               <AttendanceHistory />
             </ProtectedRoute>
             }/>
-<<<<<<< HEAD
             <Route path="/admin/board" element={
             <ProtectedRoute requiredRole="ADMIN">
                <BoardList />
             </ProtectedRoute>
             }
 />
-=======
-            {/*<Route path="/admin/userdetail" element={
-              <ProtectedRoute requiredRole="ADMIN">
-              <UserDetail />
-            </ProtectedRoute>
-            }/>*/}
->>>>>>> 8932ae1c1ca3ff2e63b5dd105654243ac5a9002b
             <Route path="/admin/usermanagement" element={
               <ProtectedRoute requiredRole="ADMIN">
               <UserManagement />
