@@ -30,7 +30,8 @@ function App() {
               <HomePage />
             </ProtectedRoute>
             }/>
-
+            
+{/* 커밋테스트 */}
             <Route path="/admin/monthlysummary" element={
               <ProtectedRoute requiredRole="ADMIN">
               <MonthlySummary />
