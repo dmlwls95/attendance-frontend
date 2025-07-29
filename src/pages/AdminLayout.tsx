@@ -4,7 +4,7 @@ import NavMemberCard from "../components/NavMemberCard";
 export default function AdminLayout()
 {
     return(
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-screen w-full">
             <div className="navbar bg-base-100 shadow-sm">
                 <div className="navbar-start">
                     <div className="dropdown">
@@ -34,7 +34,7 @@ export default function AdminLayout()
             </div>
 
             {/* 하위 페이지 렌더링 영역 */}
-            <div className="flex-1 overflow-auto p-6">
+            <div className="w-full max-w-screen-lg mx-auto">
                 <Outlet />
             </div>
         </div>

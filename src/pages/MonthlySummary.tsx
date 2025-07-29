@@ -29,8 +29,8 @@ export default function MonthlySummary() {
   }
   return (
     <div>
-      <div className="grid grid-cols-3">
-        <fieldset className="fieldset bg-base-100 border-base-300 rounded-box  border p-4 ">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+        <fieldset className="w-full fieldset bg-base-100 border-base-300 rounded-box  border p-4 ">
 
           <div className="text-lg ">연도</div>
           <div className="dropdown">

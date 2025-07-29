@@ -3,7 +3,7 @@ import RoleBadge, { Role } from "./RoleBadge";
 export default function NavMemberCard() {
     return (
         <div>
-            <div className="card card-xs card-border bg-base-20 w-96">
+            <div className="card card-xs card-border bg-base-20 ">
             <div className="card-body">
                 <div className="flex">
 
