@@ -46,7 +46,7 @@ const BoardList: React.FC = () => {
   return (
     <div>
       <h2>📋 게시판</h2>
-      <a href="/write">
+      <a href="/admin/board/write">
         <button>글쓰기</button>
       </a>
       <table border={1}>

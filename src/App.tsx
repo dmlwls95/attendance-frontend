@@ -11,7 +11,9 @@ import HomePage from './pages/HomePage';
 //import UserDetail from './pages/UserDetail';
 import UserManagement from './pages/UserManagement';
 //import MonthlySummary from './pages/MonthlySummary'
-import BoardList from './pages/BoardList';
+import BoardList from "./pages/BoardList";
+import BoardDetail from "./pages/BoardDetail";
+import BoardWrite from "./pages/BoardWrite";
 
 function App() {
 
@@ -30,8 +32,9 @@ function App() {
               <HomePage />
             </ProtectedRoute>
             }/>
+          <Route path="/admin/board/detail/:id" element={<BoardDetail />} />
+          <Route path="/admin/board/write" element={<BoardWrite />} />
             
-{/* 커밋테스트 3번째 */}
             <Route path="/admin/monthlysummary" element={
               <ProtectedRoute requiredRole="ADMIN">
               <MonthlySummary />
