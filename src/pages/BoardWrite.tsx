@@ -14,7 +14,7 @@ const BoardWrite = () => {
       alert("모든 항목을 입력해주세요.");
       return;
     }
-
+//111
     axios
       .post(`${APIConfig}/admin/board/write`, { title, content, writer })
       .then((res) => {
