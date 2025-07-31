@@ -15,11 +15,6 @@ const BoardWrite = () => {
       return;
     }
 
-    if (!title || !content || !writer) {
-      alert("모든 항목을 입력해주세요.");
-      return;
-    }
-
     axios
       .post(`${APIConfig}/admin/board/write`, { title, content, writer })
       .then((res) => {
