@@ -23,7 +23,7 @@ const BoardWrite = () => {
       })
       .then(() => {
         alert("글이 등록되었습니다.");
-        navigate(`/admin/board/list/${boardType}`);
+        navigate(`/admin/board/${boardType}`);
       })
       .catch((err) => console.error(err));
   };
