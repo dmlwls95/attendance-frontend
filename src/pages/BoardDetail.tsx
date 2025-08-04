@@ -8,13 +8,20 @@ const BoardDetail = () => {
   const [board, setBoard] = useState<any>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!id) return;
-    axios
-      .get(`${APIConfig}/admin/board/detail?id=${id}`)
-      .then((res) => setBoard(res.data))
-      .catch((err) => console.error(err));
-  }, [id]);
+useEffect(() => {
+  if (!id) return;
+
+  const detailUrl = `${APIConfig}/admin/board/detail/${id}`;
+
+  axios
+    .get(detailUrl)
+    .then((res) => {
+      setBoard(res.data);
+    })
+    .catch((err) => {
+      console.error("게시글 요청 실패:", err);
+    });
+}, [id]);
 
   if (!id || !type) return <div>잘못된 접근입니다.</div>;
   if (!board) return <div>로딩중...</div>;

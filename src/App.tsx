@@ -55,7 +55,7 @@ function App() {
             }
           />
           <Route
-            path="board/detail/:id"
+            path="board/detail/:id/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <BoardDetail />
