@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import APIConfig from "../configs/API.config";
 
 
 
@@ -12,9 +13,21 @@ type userRegisterRequest = {
     workType : string,
     profileImage : File
 }
+
+type RegisterFormInfoRequest = {
+    
+  depts : string[],
+  ranks : string[],
+  worktypes : string[]
+
+}
 export default function UserManagement()
 {
-    
+    //**************************가입 데이터 */
+
+    const [formInfo, setFormInfo] = useState<RegisterFormInfoRequest | null> (null);
+
+    //**************************가입 데이터 끝 */
 
     //**************************폼 데이터 */
     
@@ -25,9 +38,9 @@ export default function UserManagement()
     const [email, setEmail] = useState<string |null> (null);
     const [pass, setPass] = useState<string |null> (null);
     const [userType, setUserType] = useState("");
-    const [dept, setDept] = useState<string |null> (null);
-    const [rank, setRank] = useState<string |null> (null);
-    const [workType, setWorkType] = useState<string |null> (null);
+    const [dept, setDept] = useState("");
+    const [rank, setRank] = useState("");
+    const [workType, setWorkType] = useState("");
 
     /*const empNumber : string | null = null;
     const userName : string | null = null;
@@ -54,12 +67,25 @@ export default function UserManagement()
     const handleUserTypeChange = (e : React.ChangeEvent<HTMLSelectElement>) => {
         setUserType(e.target.value);
     }
+    const handleDeptChange = (e : React.ChangeEvent<HTMLSelectElement>) => {
+        setDept(e.target.value);
+    }
+
+    const handleRankChange = (e : React.ChangeEvent<HTMLSelectElement>) => {
+        setRank(e.target.value);
+    }
+
+    const handleWorkTypeChange = (e : React.ChangeEvent<HTMLSelectElement>) => {
+        setWorkType(e.target.value);
+    }
    
 
 
     const editModal = useRef<HTMLDialogElement | null>(null);
-    const onOpenCreateModal = () => {
+    const onOpenCreateModal = async () => {
+        setFormInfo(await getRequiredDataOfRegister());
         editModal.current?.showModal();
+        
     }
 
     return(
@@ -111,19 +137,26 @@ export default function UserManagement()
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">부서</legend>
-                        <select>
-                            
+                        <select id="dept" value={dept} onChange={handleDeptChange}>
+                            {formInfo?.depts.map((deptdata) => (
+                                <option value={deptdata}>{deptdata}</option>
+                            ))}
                         </select>
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">직급</legend>
-                        <select>
-                        </select> 
+                        <select id="rank" value={rank} onChange={handleRankChange}>
+                            {formInfo?.ranks.map((data) => (
+                                <option value={data}>{data}</option>
+                            ))}
+                        </select>
                     </fieldset>
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">근무 유형</legend>
-                        <select>
-                            
+                        <select id="worktype" value={workType} onChange={handleWorkTypeChange}>
+                            {formInfo?.worktypes.map((data) => (
+                                <option value={data}>{data}</option>
+                            ))}
                         </select>
                     </fieldset>
                     <fieldset className="fieldset">
@@ -156,7 +189,23 @@ export default function UserManagement()
         </div>
     )
 
-    async function getRequiredDataOfRegister(params:type) {
-        
+    async function getRequiredDataOfRegister() : Promise<RegisterFormInfoRequest> {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+            `${APIConfig}/admin/usermanagement/forminfo` , {
+                method: "GET",
+                headers : {
+                    "Contetn-Type" : "application/json",
+                    "Authorization" : `Bearer ${token}`
+                },
+                credentials: "include"
+            }
+        );
+
+        if(!response.ok)
+        {
+            throw new Error("조회 실패");
+        }
+        return await response.json();
     }
 }
