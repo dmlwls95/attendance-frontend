@@ -33,7 +33,7 @@ function App() {
             </ProtectedRoute>
             }/>
           <Route path="/admin/board/detail/:id" element={<BoardDetail />} />
-          <Route path="/admin/board/write" element={<BoardWrite />} />
+          <Route path="/admin/board/write/:type" element={<BoardWrite />} />
             
             <Route path="/admin/monthlysummary" element={
               <ProtectedRoute requiredRole="ADMIN">

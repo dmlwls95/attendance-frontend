@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import APIConfig from '../configs/API.config';
 
 interface BoardPost {
@@ -13,10 +13,11 @@ const BoardList: React.FC = () => {
   const [posts, setPosts] = useState<BoardPost[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
+  const { type } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${APIConfig}/admin/board/list?page=${currentPage}`)
+    fetch(`${APIConfig}/admin/board/list/byType?type=${type}&page=${currentPage}`)
       .then((res) => {
         if (!res.ok) throw new Error('서버 응답 실패');
         return res.json();
@@ -28,7 +29,7 @@ const BoardList: React.FC = () => {
       .catch((err) => {
         console.error("게시글 불러오기 실패:", err);
       });
-  }, [currentPage]);
+  }, [type, currentPage]);
 
   const handleDelete = (id: number) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
@@ -46,11 +47,11 @@ const BoardList: React.FC = () => {
   };
 
   const goDetail = (id: number) => {
-    navigate(`/board/detail/${id}`);
+    navigate(`/admin/board/detail/${id}/${type}`);
   };
 
   const goWrite = () => {
-    navigate(`/admin/board/write`);
+    navigate(`/admin/board/write/${type}`);
   };
 
   return (
@@ -150,7 +151,7 @@ const BoardList: React.FC = () => {
       `}</style>
 
       <div className="dc-header">
-        <h2>자유게시판</h2>
+        <h2>{type === 'NOTICE' ? '공지사항' : type === 'SUGGEST' ? '건의 게시판' : '자유게시판'}</h2>
         <button className="dc-write-btn" onClick={goWrite}>✍ 글쓰기</button>
       </div>
 
@@ -166,9 +167,9 @@ const BoardList: React.FC = () => {
         </thead>
         <tbody>
           {posts.length > 0 ? (
-            posts.map((post) => (
+            posts.map((post, index) => (
               <tr key={post.id}>
-                <td>{post.id}</td>
+                <td>{(currentPage - 1) * 10 + index + 1}</td>
                 <td className="dc-title-cell" onClick={() => goDetail(post.id)}>
                   {post.title}
                 </td>
