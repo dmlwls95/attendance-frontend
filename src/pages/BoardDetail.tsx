@@ -1,7 +1,7 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import APIConfig from "../configs/API.config";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import APIConfig from '../configs/API.config';
 
 interface Comment {
   id: number;
@@ -10,260 +10,155 @@ interface Comment {
   createdAt: string;
 }
 
-const BoardDetail = () => {
-  const { id, type } = useParams();
-  const navigate = useNavigate();
+const BoardDetail: React.FC = () => {
+  const { id, type } = useParams<{ id: string; type: string }>();
+  const navigate     = useNavigate();
 
-  const [board, setBoard] = useState<any>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [writer, setWriter] = useState("");
-  const [newComment, setNewComment] = useState("");
+  const [board,   setBoard]   = useState<any>(null);
+  const [comments, setComm]   = useState<Comment[]>([]);
+  const [writer,   setWriter] = useState('');
+  const [newComment, setNew]  = useState('');
 
-  /* ───────────────────── 데이터 로딩 ───────────────────── */
+  /* ───── load ───── */
   useEffect(() => {
     if (!id) return;
 
-    // 게시글
-    axios
-      .get(`${APIConfig}/admin/board/detail/${id}`)
-      .then((res) => setBoard(res.data))
-      .catch((err) => console.error("게시글 요청 실패:", err));
+    axios.get(`${APIConfig}/admin/board/detail/${id}`)
+         .then(res => setBoard(res.data))
+         .catch(console.error);
 
-    // 댓글
-    axios
-      .get(`${APIConfig}/api/comments/${id}`)
-      .then((res) => setComments(res.data))
-      .catch((err) => console.error("댓글 요청 실패:", err));
+    fetchComments();
   }, [id]);
 
-  const fetchComments = () => {
-    axios
-      .get(`${APIConfig}/api/comments/${id}`)
-      .then((res) => setComments(res.data))
-      .catch((err) => console.error(err));
-  };
+  const fetchComments = () =>
+    axios.get(`${APIConfig}/api/comments/${id}`)
+         .then(res => setComm(res.data))
+         .catch(console.error);
 
-  /* ───────────────────── 댓글 등록 ───────────────────── */
-  const handleAddComment = () => {
+  /* ───── add / delete ───── */
+  const handleAdd = () => {
     if (!writer.trim() || !newComment.trim()) {
-      alert("작성자와 내용을 입력해주세요.");
+      alert('작성자와 내용을 입력해주세요.');
       return;
     }
-
-    axios
-      .post(`${APIConfig}/api/comments`, {
-        writer,
-        content: newComment,
-        boardId: Number(id),
-        boardType: board.boardType, // 백엔드에서 필요시 사용
-      })
-      .then(() => {
-        setWriter("");
-        setNewComment("");
-        fetchComments();
-      })
-      .catch((err) => console.error("댓글 등록 실패:", err));
+    axios.post(`${APIConfig}/api/comments`, {
+      writer,
+      content: newComment,
+      boardId: Number(id),
+      boardType: board?.boardType,
+    })
+    .then(() => { setWriter(''); setNew(''); fetchComments(); })
+    .catch(console.error);
   };
 
-  /* ───────────────────── 댓글 삭제 ───────────────────── */
-  const handleDeleteComment = (commentId: number) => {
-    if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
-
-    axios
-      .delete(`${APIConfig}/api/comments/${commentId}`)
-      .then(() => fetchComments())
-      .catch((err) => console.error("댓글 삭제 실패:", err));
+  const handleDel = (cid: number) => {
+    if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+    axios.delete(`${APIConfig}/api/comments/${cid}`)
+         .then(fetchComments)
+         .catch(console.error);
   };
 
-  /* ───────────────────── 렌더링 ───────────────────── */
-  if (!id || !type) return <div>잘못된 접근입니다.</div>;
-  if (!board) return <div>로딩중...</div>;
+  /* ───── guard ───── */
+  if (!id || !type) return <div className="text-center py-10">잘못된 접근입니다.</div>;
+  if (!board)        return <div className="text-center py-10">로딩중...</div>;
 
+  /* ───── utils ───── */
+  const boardTypeName = () => {
+    switch ((board.boardType ?? '').toUpperCase()) {
+      case 'NOTICE':  return '공지사항';
+      case 'FREE':    return '자유게시판';
+      case 'SUGGEST': return '건의사항';
+      default:        return '';
+    }
+  };
+  const writeTime = (board.writeDate ?? board.createdAt ?? '')
+                    .substring(0, 16).replace('T', ' ');
+
+  /* ───── view ───── */
   return (
-    <div
-      style={{
-        maxWidth: "800px",
-        margin: "0 auto",
-        fontFamily: "Malgun Gothic, sans-serif",
-      }}
-    >
-      {/* 게시글 본문 */}
-      <h2 style={{
-        fontSize: '28px',
-        fontWeight: 'bold',
-        color: '#333',
-        borderBottom: '2px solid #ddd',
-        paddingBottom: '10px',
-        marginBottom: '20px'
-      }}>
-        제목 : {board.title}
+    <div className="max-w-2xl mx-auto p-6 font-sans">
+
+      {/* 헤더 */}
+      <h2 className="text-xl font-bold">
+        ({boardTypeName()}) {board.title}
       </h2>
-      <p style={{ color: "#555", margin: "4px 0 14px 0" }}>
-        작성자: <strong>{board.writer}</strong>
+      <p className="text-xs text-gray-500 mt-1">{writeTime}</p>
+
+      {/* 작성자 */}
+      <p className="text-sm text-gray-600 mt-4 mb-4">
+        작성자: <span className="font-semibold">{board.writer}</span>
       </p>
-      <div
-        style={{
-          padding: "20px",
-          border: "1px solid #e2e2e2",
-          borderRadius: "4px",
-          background: "#fafafa",
-          lineHeight: 1.6,
-          whiteSpace: "pre-line",
-        }}
-      >
+
+      {/* 본문 */}
+      <div className="p-4 border rounded-box bg-base-100 leading-relaxed whitespace-pre-line">
         {board.content}
       </div>
 
+      {/* 목록 버튼 */}
       <button
         onClick={() => navigate(`/admin/board/${type}`)}
-        style={{
-          marginTop: "20px",
-          padding: "6px 14px",
-          background: "#5b97f2",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-        }}
+        className="btn btn-outline btn-sm mt-6"
       >
         ← 목록으로
       </button>
 
-      {/* ─────────── 댓글 입력 ─────────── */}
-      <div
-        style={{
-          borderTop: "2px solid #555",
-          marginTop: "40px",
-          paddingTop: "15px",
-        }}
-      >
-        <h4 style={{ margin: "0 0 10px 0" }}>댓글 작성</h4>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "6px",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+      {/* 댓글 입력 */}
+      <div className="border-t-2 border-base-300 mt-10 pt-6 space-y-3">
+        <h4 className="font-semibold">댓글 작성</h4>
+        <div className="flex flex-wrap gap-2">
+          {/* ① 닉네임 입력 - 무채색 focus */}
           <input
             type="text"
             placeholder="닉네임"
             value={writer}
-            onChange={(e) => setWriter(e.target.value)}
-            style={{
-              width: "120px",
-              padding: "6px 8px",
-              border: "1px solid #ccc",
-            }}
+            onChange={e => setWriter(e.target.value)}
+            className="input input-sm input-bordered input-neutral w-32
+                       focus:outline-none focus:ring-0 focus:border-gray-400"
           />
+          {/* ② 댓글 입력 - 무채색 focus */}
           <input
             type="text"
             placeholder="여러분의 한마디 (최대 200자)"
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            style={{
-              flex: 1,
-              minWidth: "200px",
-              padding: "6px 8px",
-              border: "1px solid #ccc",
-            }}
+            onChange={e => setNew(e.target.value)}
             maxLength={200}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleAddComment();
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter') handleAdd();
             }}
+            className="input input-sm input-bordered input-neutral flex-1 min-w-[200px]
+                       focus:outline-none focus:ring-0 focus:border-gray-400"
           />
-          <button
-            onClick={handleAddComment}
-            style={{
-              background: "#5b97f2",
-              color: "#fff",
-              border: "none",
-              padding: "6px 14px",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={handleAdd} className="btn btn-outline btn-sm">
             등록
           </button>
         </div>
       </div>
 
-      {/* ─────────── 댓글 목록 ─────────── */}
-      <div style={{ marginTop: "25px" }}>
-        <h4 style={{ margin: "0 0 10px 0" }}>
-          댓글{" "}
-          <span style={{ color: "#5b97f2" }}>{comments.length}</span>
+      {/* 댓글 목록 */}
+      <div className="mt-8">
+        <h4 className="font-semibold mb-3">
+          댓글 <span className="text-base-content/70">{comments.length}</span>
         </h4>
 
         {comments.length === 0 && (
-          <div
-            style={{
-              color: "#888",
-              padding: "20px 0",
-              textAlign: "center",
-            }}
-          >
-            아직 댓글이 없습니다.
-          </div>
+          <div className="text-center text-gray-500 py-10">아직 댓글이 없습니다.</div>
         )}
 
         {comments.map((c, idx) => (
-          <div
-            key={c.id}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              padding: "10px 0",
-              borderTop:
-                idx === 0 ? "2px solid #d5d5d5" : "1px solid #eee",
-              fontSize: "14px",
-            }}
-          >
-            {/* 닉네임 · 시각 */}
-            <div
-              style={{
-                width: "160px",
-                color: "#1e90ff",
-                fontWeight: 600,
-              }}
-            >
+          <div key={c.id}
+               className={`flex py-4 text-sm ${idx === 0 ? 'border-t-2' : 'border-t'} border-base-200`}>
+            <div className="w-40 text-gray-700 font-semibold">
               {c.writer}
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "11px",
-                  color: "#999",
-                  fontWeight: 400,
-                  marginTop: "2px",
-                }}
-              >
-                {c.createdAt?.substring(0, 16).replace("T", " ")}
+              <span className="block text-xs text-gray-400 font-normal mt-1">
+                {c.createdAt?.substring(0, 16).replace('T', ' ')}
               </span>
             </div>
-
-            {/* 내용 */}
-            <div
-              style={{
-                flex: 1,
-                lineHeight: 1.4,
-                wordBreak: "break-word",
-              }}
-            >
+            <div className="flex-1 break-words leading-relaxed">
               {c.content}
             </div>
-
-            {/* 삭제 */}
             <button
-              onClick={() => handleDeleteComment(c.id)}
-              style={{
-                marginLeft: "12px",
-                background: "none",
-                border: "1px solid #ccc",
-                color: "#666",
-                fontSize: "12px",
-                padding: "3px 8px",
-                cursor: "pointer",
-              }}
+              onClick={() => handleDel(c.id)}
+              className="btn btn-xs btn-outline ml-3"
             >
               삭제
             </button>
