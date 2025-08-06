@@ -14,10 +14,10 @@ const BoardDetail: React.FC = () => {
   const { id, type } = useParams<{ id: string; type: string }>();
   const navigate     = useNavigate();
 
-  const [board,   setBoard]   = useState<any>(null);
-  const [comments, setComm]   = useState<Comment[]>([]);
-  const [writer,   setWriter] = useState('');
-  const [newComment, setNew]  = useState('');
+  const [board,      setBoard] = useState<any>(null);
+  const [comments,   setComm]  = useState<Comment[]>([]);
+  const [writer,     setWriter] = useState('');
+  const [newComment, setNew]   = useState('');
 
   /* ───── load ───── */
   useEffect(() => {
@@ -94,19 +94,19 @@ const BoardDetail: React.FC = () => {
         {board.content}
       </div>
 
-      {/* 목록 버튼 */}
+      {/* 목록 버튼 ─ 무채색 & hover 회색 */}
       <button
         onClick={() => navigate(`/admin/board/${type}`)}
-        className="btn btn-outline btn-sm mt-6"
+        className="btn btn-sm mt-6 border border-gray-400 text-gray-700
+                   hover:bg-gray-200 hover:border-gray-500"
       >
         ← 목록으로
       </button>
-
+      
       {/* 댓글 입력 */}
       <div className="border-t-2 border-base-300 mt-10 pt-6 space-y-3">
         <h4 className="font-semibold">댓글 작성</h4>
         <div className="flex flex-wrap gap-2">
-          {/* ① 닉네임 입력 - 무채색 focus */}
           <input
             type="text"
             placeholder="닉네임"
@@ -115,7 +115,6 @@ const BoardDetail: React.FC = () => {
             className="input input-sm input-bordered input-neutral w-32
                        focus:outline-none focus:ring-0 focus:border-gray-400"
           />
-          {/* ② 댓글 입력 - 무채색 focus */}
           <input
             type="text"
             placeholder="여러분의 한마디 (최대 200자)"
@@ -128,7 +127,12 @@ const BoardDetail: React.FC = () => {
             className="input input-sm input-bordered input-neutral flex-1 min-w-[200px]
                        focus:outline-none focus:ring-0 focus:border-gray-400"
           />
-          <button onClick={handleAdd} className="btn btn-outline btn-sm">
+          {/* 등록 버튼 ─ 무채색 & hover 회색 */}
+          <button
+            onClick={handleAdd}
+            className="btn btn-sm border border-gray-400 text-gray-700
+                       hover:bg-gray-200 hover:border-gray-500"
+          >
             등록
           </button>
         </div>
@@ -156,9 +160,11 @@ const BoardDetail: React.FC = () => {
             <div className="flex-1 break-words leading-relaxed">
               {c.content}
             </div>
+            {/* 삭제 버튼 ─ 무채색 & hover 회색 */}
             <button
               onClick={() => handleDel(c.id)}
-              className="btn btn-xs btn-outline ml-3"
+              className="btn btn-xs ml-3 border border-gray-400 text-gray-700
+                         hover:bg-gray-200 hover:border-gray-500"
             >
               삭제
             </button>
