@@ -10,6 +10,7 @@ import UserManagement from './pages/UserManagement';
 import BoardList from './pages/BoardList';
 import BoardDetail from './pages/BoardDetail';
 import BoardWrite from './pages/BoardWrite';
+import BoardEdit from './pages/BoardEdit';
 
 
 import UserLayout from './pages/userpages/UserLayout';
@@ -40,6 +41,7 @@ function App() {
 
           {/* 게시판 메뉴 및 기능 */}
           <Route path="board" element={<Navigate to="/admin/board/notice" replace />} />
+
           <Route
             path="board/:type"
             element={
@@ -48,6 +50,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="board/write/:type"
             element={
@@ -56,6 +59,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* ✅ 수정 라우트 추가 */}
+          <Route
+            path="board/edit/:id/:type"
+            element={
+              <ProtectedRoute requiredRole="ADMIN">
+                <BoardEdit />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="board/detail/:id/:type"
             element={
@@ -74,6 +88,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="attendance"
             element={
@@ -82,6 +97,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="usermanagement"
             element={

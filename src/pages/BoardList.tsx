@@ -23,8 +23,7 @@ const BoardList: React.FC = () => {
   /* ───────── fetch list ───────── */
   useEffect(() => {
     if (!upperType) return;
-    const url = `${APIConfig}/admin/board/list/byType?type=${upperType}&page=${currentPage}`;
-    fetch(url)
+    fetch(`${APIConfig}/admin/board/list/byType?type=${upperType}&page=${currentPage}`)
       .then(res => { if (!res.ok) throw new Error('list fetch fail'); return res.json(); })
       .then(data => { setPosts(data.list); setTotal(data.totalPage); })
       .catch(console.error);
@@ -40,6 +39,7 @@ const BoardList: React.FC = () => {
 
   const goDetail = (id: number) => navigate(`/admin/board/detail/${id}/${type}`);
   const goWrite  = ()            => navigate(`/admin/board/write/${type}`);
+  const goEdit   = (id: number) => navigate(`/admin/board/edit/${id}/${type}`);
 
   const boardTypeName = () => {
     switch (upperType) {
@@ -54,7 +54,7 @@ const BoardList: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 font-sans">
 
-      {/* 탭 메뉴 (무채색) */}
+      {/* 탭 메뉴 */}
       <div className="tabs justify-center mb-8">
         <button className={`tab tab-bordered ${upperType === 'NOTICE'  && 'tab-active font-semibold'}`}
                 onClick={() => navigate('/admin/board/notice')}>공지사항</button>
@@ -67,7 +67,13 @@ const BoardList: React.FC = () => {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">{boardTypeName()}</h2>
-        <button className="btn btn-sm btn-outline" onClick={goWrite}>글쓰기</button>
+        {/* ▶ 글쓰기 버튼 (무채색) */}
+        <button
+          className="btn btn-sm border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
+          onClick={goWrite}
+        >
+          글쓰기
+        </button>
       </div>
 
       {/* 테이블 */}
@@ -90,13 +96,32 @@ const BoardList: React.FC = () => {
                   <td className="cursor-pointer hover:underline" onClick={() => goDetail(p.id)}>{p.title}</td>
                   <td className="text-center">{p.writer}</td>
                   <td className="text-center">{p.writeDate?.substring(0, 10)}</td>
-                  <td className="text-center">
-                    <button className="btn btn-xs btn-outline" onClick={() => handleDelete(p.id)}>삭제</button>
+
+                  {/* ▶ 수정 / 삭제 버튼 */}
+                  <td className="px-2">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        className="btn btn-xs border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
+                        onClick={() => goEdit(p.id)}
+                      >
+                        수정
+                      </button>
+                      <button
+                        className="btn btn-xs border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
+                        onClick={() => handleDelete(p.id)}
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr><td colSpan={5} className="py-8 text-center text-gray-500">등록된 게시글이 없습니다.</td></tr>
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-gray-500">
+                  등록된 게시글이 없습니다.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
@@ -107,8 +132,9 @@ const BoardList: React.FC = () => {
         {Array.from({ length: totalPage }, (_, i) => (
           <button key={i}
                   onClick={() => setCurrent(i)}
-                  className={`join-item btn btn-xs btn-outline px-3
-                              ${currentPage === i && '!bg-gray-600 !text-white !border-gray-600'}`}>
+                  className={`join-item btn btn-xs border border-gray-400 text-gray-700 px-3
+                              hover:bg-gray-200 hover:border-gray-500
+                              ${currentPage === i && '!bg-gray-300 !border-gray-500'}`}>
             {i + 1}
           </button>
         ))}
