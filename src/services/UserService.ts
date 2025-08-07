@@ -27,6 +27,21 @@ export type RegisterFormPayload = {
   profileImageFile: File | null;
 };
 
+export type UserdataResponse = {
+	empnum : string;
+	name : string;
+	email: string;
+	role: "USER" | "ADMIN";
+	rank: string;
+	worktype: string;
+	depttype: string;
+	profileImageUrl: string;
+	hiredate: Date;
+	workStartTime: string;
+	workEndTime: string;
+}
+
+
 export async function getRequiredDataOfRegister(): Promise<RegisterFormInfoRequest> {
   const token = localStorage.getItem("token");
   const response = await fetch(`${APIConfig}/admin/usermanagement/forminfo`, {
@@ -89,8 +104,73 @@ export async function postRequestRegister(payload: RegisterFormPayload): Promise
   return await response.json();
 }
 
+// 유저 정보 업데이트
+export async function updateUserInfo(payload: RegisterFormPayload): Promise<RegisterResponse> {
+  const {
+    empNumber,
+    email,
+    userName,
+    pass,
+    userType,
+    dept,
+    rank,
+    workType,
+    profileImageFile,
+    hiredate,
+    workStartTime,
+    workEndTime,
+  } = payload;
+
+  const token = localStorage.getItem("token");
+  const formData = new FormData();
+  formData.append("empnum", empNumber);
+  formData.append("email", email);
+  formData.append("work_name", userName);
+  formData.append("password", pass);
+  formData.append("role", userType);
+  formData.append("dept", dept);
+  formData.append("rank", rank);
+  formData.append("worktype", workType);
+  formData.append("hiredate", hiredate);
+  formData.append("workstarttime", workStartTime);
+  formData.append("workendtime", workEndTime);
+
+  if (profileImageFile) {
+    formData.append("profileImage", profileImageFile);
+  }
+
+  const response = await fetch(`${APIConfig}/admin/usermanagement/userupdate`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token ?? ""}`,
+      // FormData 사용 시 Content-Type 지정 금지 (브라우저가 boundary 포함해 자동 세팅)
+    },
+    credentials: "include",
+    body: formData,
+  });
+
+
+  if (!response.ok) throw new Error("등록 실패");
+  return await response.json();
+}
+
 export async function getDefaultImageFile(): Promise<File> {
   const response = await fetch("https://img.daisyui.com/images/profile/demo/yellingcat@192.webp");
   const blob = await response.blob();
   return new File([blob], "yellingcat.webp", { type: blob.type });
+}
+
+export async function findAndGetUserdata(empno:string): Promise<UserdataResponse> {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${APIConfig}/admin/usermanagement/checkuser?empno=${empno}`, {
+    method: "GET",
+    headers: {
+      // "Content-Type": "application/json", // GET이므로 불필요
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok) throw new Error("조회 실패");
+  return await response.json();
 }
