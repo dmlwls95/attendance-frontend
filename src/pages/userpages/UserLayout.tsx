@@ -20,6 +20,7 @@ export default function UserLayout()
                             <li><a href="/uesr">주간 근로 분석</a></li>
                             <li><a href="/user">월간 근로 분석</a></li>
                             <li><a href="/user">기간별 출퇴근 관리</a></li>
+                            <li><a href="/user/board/notice">사내 게시판</a></li>
                             <li><a href="/user">사내 게시판</a></li>
                         </ul>
                     </div>
