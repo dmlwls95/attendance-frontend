@@ -11,6 +11,9 @@ import BoardList from './pages/BoardList';
 import BoardDetail from './pages/BoardDetail';
 import BoardWrite from './pages/BoardWrite';
 
+
+import UserLayout from './pages/userpages/UserLayout';
+
 function App() {
   return (
     <BrowserRouter>
@@ -25,8 +28,7 @@ function App() {
             <ProtectedRoute requiredRole="ADMIN">
               <AdminLayout />
             </ProtectedRoute>
-          }
-        >
+          }>
           <Route
             path="home"
             element={
@@ -89,6 +91,17 @@ function App() {
             }
           />
         </Route>
+
+
+        {/* 유저 레이아웃 */}
+          <Route
+          path="/user"
+          element={
+            <ProtectedRoute requiredRole="USER">
+              <UserLayout />
+            </ProtectedRoute>
+          }
+          />
       </Routes>
     </BrowserRouter>
   );

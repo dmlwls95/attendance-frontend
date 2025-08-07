@@ -4,20 +4,18 @@ export const Role = {
 
 }as const;
 
-type ROLE = typeof Role[keyof typeof Role];
+//type ROLE = typeof Role[keyof typeof Role];
 
-export default function RoleBadge(role : ROLE)
+export default function RoleBadge(role : string | undefined)
 {
     switch (role) {
-        case Role.ADMIN:
+        case "ADMIN":
             return (
                 <div className="badge badge-soft badge-accent">ADMIN</div>
             )
-        case Role.USER:
+        case "USER":
             return (
-                <div>
-
-                </div>
+                <div className="badge badge-soft badge-accent">USER</div>
             )
         default:
             break;
