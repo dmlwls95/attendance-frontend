@@ -7,11 +7,19 @@ import {
   type RegisterFormInfoRequest,
   type RegisterResponse,
   findAndGetUserdata,
-  type UserdataResponse,
   updateUserInfo,
+  getPagedUsers,
+  type UserdataResponse,
+  type PageResponse,
+  deleteUserByEmpno,
+  findAttendanceByEmpnoNdate,
+  type AttendanceResponse,
 } from "../services/UserService";
 import { DayPicker } from "react-day-picker";
 import { MdOutlinePersonSearch } from "react-icons/md";
+import { ImCalendar } from "react-icons/im";
+
+
 type FormState = {
   empNumber: string;
   userName: string;
@@ -62,27 +70,74 @@ export default function UserManagement() {
     profileImageFile: null,
   });
 
-  const [getUserinfo, setGetuserinfo] = useState<UserdataResponse>({
-    empnum: "",
-    name: "",
-    email: "",
-    role: "USER",
-    rank: "",
-    worktype: "",
-    depttype: "",
-    profileImageUrl: "",
-    hiredate: new Date(),
-    workStartTime: "09:00",
-    workEndTime: "18:00",
-    
-  });
-
+  
   // 미리보기/토스트/모달
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [regiResMsg, setRegiResMsg] = useState<RegisterResponse | null>(null);
   // 계정 생성 모달
   const editModal = useRef<HTMLDialogElement | null>(null);
   const accountSettingModal = useRef<HTMLDialogElement | null> (null);
+  // 계정 삭제 모달
+  const deleteModal = useRef<HTMLDialogElement | null>(null);
+  const [trytoDeleteData, SetTryToDeleteData] = useState<UserdataResponse | null> (null);
+  // 근태 기록 편집 모달
+  const editAttendanceModal = useRef<HTMLDialogElement | null> (null);
+  const [attendanceRecord , SetAttendanceRecord] = useState<AttendanceResponse | null>(null);
+
+
+
+  // 유저 데이터들 리스트
+  const [users, setUsers] = useState<PageResponse<UserdataResponse> | null> (null);
+
+  const onClickEdit = async (empnum : string) => {
+    await onOpenAccountSettingModal();
+    const res = await handleFindUserByEmpnumber(empnum);
+    if(!res){
+      accountSettingModal.current?.close();
+      return;
+    }
+  }
+
+
+
+  //pagenation
+  const [nowpage, setNowpage] = useState<number>(0);
+  const onClickpagePrev = () => {
+    updatePagination(nowpage - 1);
+    setNowpage(nowpage-1);
+
+  }
+  const onClickpageNext = () => {
+    updatePagination(nowpage + 1)
+    setNowpage(nowpage+1);
+  }
+
+  const updatePagination = async ( page: number) => {
+    const usr = await getPagedUsers(page, 10);
+    if(typeof usr === "string")
+    {
+      const errMessage = JSON.parse(usr);
+      setRegiResMsg({success : false, message: errMessage.message});
+      return;
+    }
+    setUsers(usr);
+  }
+
+  // 첫 리스트 불러오기
+  useEffect(() =>{
+
+    (async () => {
+      const usr = await getPagedUsers(1, 10);
+      if(typeof usr === "string")
+      {
+        const errMessage = JSON.parse(usr);
+        setRegiResMsg({success : false, message: errMessage.message});
+        return;
+      }
+      setUsers(usr);
+      setNowpage(1);
+    })();
+  },[])
 
   // 토스트 자동 닫힘
   useEffect(() => {
@@ -119,13 +174,44 @@ export default function UserManagement() {
     }));
   };
 
+  // 근태 기록 편집 날짜 입력시 근태 기록 찾아봄
+  const onClickAttendanceCalendar = async () => {
+    if(typeof attendanceRecord?.empnum === "undefined")
+    {
+      editAttendanceModal.current?.close();
+      return;
+    }
+    const res = await findAttendanceByEmpnoNdate(attendanceRecord?.empnum, attendanceRecord?.date);
+    SetAttendanceRecord( prev => {
+      if(!prev) return prev;
+      return {
+        ...prev,
+        clockIn : res.clockIn,
+        clockOut : res.clockOut,
+        isLate : res.isLate,
+        isLeftEarly :res.isLeftEarly,
+        totalHours : res.totalHours
+      };
+    });
 
-  // 사원번호로 유저 찾기 및 가져오기
+  };
+
+
+  // 입풋으로 입력된 사원번호로 유저 찾기 및 가져오기
   const handleFindUser = async (
   ) => {
     const data = await findAndGetUserdata(editForm.empNumber);
+
+    if(typeof data === "string")
+    {
+      
+      const errMessage = JSON.parse(data);
+      setRegiResMsg({success : false, message: errMessage.message});
+      return;
+    }
+    
     const img = await urlToFile(data.profileImageUrl, "profile.jpg");
-    setEditForm((prev) => ({
+    setEditForm(() => ({
       empNumber: data.empnum,
       userName: data.name,
       email: data.email,
@@ -139,8 +225,37 @@ export default function UserManagement() {
       workEndTime: data.workEndTime,
       profileImageFile: img,
     }));
-    console.log(editForm);
   }
+
+  // 사원번호를 인자로 받아 유저 정보 가져오기
+  const handleFindUserByEmpnumber = async(empnum : string) : Promise<boolean> => {
+    const data = await findAndGetUserdata(empnum);
+
+    if(typeof data === "string")
+    {
+      const errMessage = JSON.parse(data);
+      setRegiResMsg({success : false, message: errMessage.message});
+      return false;
+    }
+    
+    const img = await urlToFile(data.profileImageUrl, "profile.jpg");
+    setEditForm(() => ({
+      empNumber: data.empnum,
+      userName: data.name,
+      email: data.email,
+      pass: "",
+      userType: data.role,
+      dept: data.depttype,
+      rank: data.rank,
+      workType: data.worktype,
+      hiredate: data.hiredate? new Date(data.hiredate): new Date(),
+      workStartTime: data.workStartTime,
+      workEndTime: data.workEndTime,
+      profileImageFile: img,
+    }));
+    return true;
+  }
+
 
   // url을 이미지로 변환
   async function urlToFile(url: string, filename: string): Promise<File> {
@@ -201,9 +316,45 @@ export default function UserManagement() {
       console.error(e);
       setRegiResMsg({ success: false, message: "필수 데이터 조회 실패" });
     }
-    
-    
   };
+
+  // 모달 열기 : 확인 요청 모달
+  const onOpenDeleteModal = async (empno : UserdataResponse) => {
+    SetTryToDeleteData(empno);
+    deleteModal.current?.show();
+  }
+  const tryToDeleteUser = async (empno : string | undefined) => {
+    if(typeof empno === "undefined")
+    {
+      return;
+    }
+    try{
+      const data = await deleteUserByEmpno(empno);
+      deleteModal.current?.close();
+      setRegiResMsg(data);
+      updateScreenData();
+
+    }catch(e){
+      console.error(e);
+      setRegiResMsg({ success : false, message: "알 수 없는 사원"})
+    }
+  }
+  //모달 열기 : 근무 기록 편집 모달
+  const onOpenEditAttendanceModal = async (user : UserdataResponse) => {
+    SetAttendanceRecord(() => ({
+      email : user.email,
+      name : user.name,
+      empnum : user.empnum,
+      date : new Date(),
+      clockIn : "",
+      clockOut : "",
+      isLate : "",
+      isLeftEarly : "",
+      totalHours : 0
+    }));
+
+    editAttendanceModal.current?.show();
+  }
 
   const onClickRegister = async () => {
     try {
@@ -240,6 +391,9 @@ export default function UserManagement() {
           profileImageFile: null,
         }));
         setPreviewUrl(null);
+
+        //성공 시 화면 초기화
+        updateScreenData();
       }
     } catch (e) {
       console.error(e);
@@ -283,6 +437,8 @@ export default function UserManagement() {
           profileImageFile: null,
         }));
         setPreviewUrl(null);
+        //성공 시 화면 업데이트
+        updateScreenData();
       }
     } catch (e) {
       console.error(e);
@@ -326,6 +482,33 @@ export default function UserManagement() {
     setPreviewUrl(null);
   };
 
+  // 화면 업데이트
+  const updateScreenData = async () => {
+    const usr = await getPagedUsers(nowpage, 10);
+    if(typeof usr === "string")
+    {
+      const errMessage = JSON.parse(usr);
+      setRegiResMsg({success : false, message: errMessage.message});
+      return;
+    }
+    setUsers(usr);
+  }
+
+
+  //유저 근태 시간 편집
+  const onClickEditAttendance = (user : UserdataResponse) => {
+    onOpenEditAttendanceModal(user);
+    
+  }
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const {name, value} = e.target;
+    SetAttendanceRecord(prev =>
+
+      prev? {...prev, [name] : value} : prev
+    );
+  };
+
   return (
     
     <div>
@@ -351,6 +534,81 @@ export default function UserManagement() {
         계정 편집
       </button>
       <div className="divider"></div>
+
+      {/** 표 출력 */}
+      <div>
+        {/* 헤더 */}
+        <div className="overflow-x-auto">
+        <table className="table table-xs">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>사번</th>
+              <th>이름</th>
+              <th>입사일</th>
+              <th>부서</th>
+              <th>직급</th>
+              <th>근무유형</th>
+              <th>근무시간</th>
+              <th>근태관리</th>
+              <th>수정</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users?.content?.map((user, idx) => (
+              <tr key={user.empnum}>
+                <th>{idx + 1}</th>
+                <td>{user.empnum}</td>
+                <td>{user.name}</td>
+                <td>{user.hiredate? new Date(user.hiredate).toLocaleDateString("ko-KR") : ""}</td>
+                <td>{user.depttype}</td>
+                <td>{user.rank}</td>
+                <td>{user.worktype}</td>
+                <td>
+                  {user.workStartTime} ~ {user.workEndTime}
+                </td>
+                <td>
+                  <button className="btn btn-square" onClick={() => onClickEditAttendance(user)}><ImCalendar /></button>
+                </td>
+                <td>
+                  <div className="grid grid-cols-2">
+                    <div>
+                      <button className="btn btn-info" onClick={() => onClickEdit(user.empnum)}>편집</button>
+                    </div>
+                    <div>
+                      <button className="btn btn-error" onClick={() => {onOpenDeleteModal(user)}}>삭제</button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>#</th>
+              <th>사번</th>
+              <th>이름</th>
+              <th>입사일</th>
+              <th>부서</th>
+              <th>직급</th>
+              <th>근무유형</th>
+              <th>근무시간</th>
+              <th>근태관리</th>
+              <th>수정</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+        <div>
+          <div className="join">
+            {nowpage == 1 ? <button className="join-item btn btn-disabled"></button> :<button className="join-item btn" onClick={onClickpagePrev}>«</button> }
+            <button className="join-item btn">{nowpage}</button>
+            {nowpage == users?.totalPages? <button className="join-item btn btn-disabled"></button> : <button className="join-item btn" onClick={onClickpageNext}>»</button>}
+          </div>
+        </div>
+      </div>
+      
+    
 
 
 
@@ -484,7 +742,7 @@ export default function UserManagement() {
             </div>
 
             <button popoverTarget="rdp-popover" className="input input-border" style={{ anchorName: "--rdp" } as React.CSSProperties}>
-              {form.hiredate ? form.hiredate.toLocaleDateString() : "입사일"}
+              {form.hiredate ? new Date(form.hiredate).toLocaleDateString("ko-KR") : "입사일"}
             </button>
             <div popover="auto" id="rdp-popover" className="dropdown" style={{ positionAnchor: "--rdp" } as React.CSSProperties}>
               <DayPicker className="react-day-picker" mode="single" selected={form.hiredate} onSelect={handleDateChange} />
@@ -691,7 +949,7 @@ export default function UserManagement() {
             </div>
 
             <button popoverTarget="erdp-popover" className="input input-border" style={{ anchorName: "--rdp" } as React.CSSProperties}>
-              {editForm.hiredate ? editForm.hiredate.toLocaleDateString() : new Date().toLocaleDateString()}
+              {editForm.hiredate ? new Date(editForm.hiredate).toLocaleDateString("ko-KR") : new Date().toLocaleDateString()}
             </button>
             <div popover="auto" id="erdp-popover" className="dropdown" style={{ positionAnchor: "--rdp" } as React.CSSProperties}>
               <DayPicker className="react-day-picker" mode="single" selected={editForm.hiredate} onSelect={handleDateChange} />
@@ -765,6 +1023,132 @@ export default function UserManagement() {
           <button>close</button>
         </form>
       </dialog>
+
+
+
+
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* 계정 삭제 모달 */}
+      <dialog ref={deleteModal} className="modal">
+        <div className="modal-box">
+          <h1 className="font-bold text-lg">계정 삭제</h1>
+          <br></br>
+          <p className="text-4xl text-error font-bold">{trytoDeleteData?.name}</p><p className="text-xl">계정이 정말로 삭제됩니다 진행할까요?</p>
+          
+          <br></br>
+          <div className="grid grid-cols-2 gap-7">
+            <button className="btn btn-error" onClick={() => tryToDeleteUser(trytoDeleteData?.empnum)}>삭제</button>
+            <button className="btn btn-success" onClick={() => {
+              deleteModal.current?.close();
+            }}>취소</button>
+
+          </div>
+          
+
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* 근태 기록 편집 모달*/}
+      <dialog ref={editAttendanceModal} className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">근태 기록 편집</h3>
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">날짜</legend>
+            <button popoverTarget="eardp-popover" className="input input-border" style={{ anchorName: "--rdp" } as React.CSSProperties}>
+              {}
+            </button>
+            <div popover="auto" id="eardp-popover" className="dropdown" style={{ positionAnchor: "--rdp" } as React.CSSProperties}>
+              <DayPicker className="react-day-picker" mode="single" selected={attendanceRecord?.date} onSelect={() => onClickAttendanceCalendar()} />
+            </div>
+
+              <div className="grid grid-flow-row">
+                <div className="grid grid-cols-2 gap-4">
+                  <p className="text-sm">출근 시간</p>
+                  <p className="text-sm">퇴근 시간</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="time"
+                    className="input"
+                    name="clockIn"
+                    value={attendanceRecord?.clockIn ?? ""}
+                    onChange={handleTimeChange}
+                  />
+                  <input
+                    type="time"
+                    className="input"
+                    name="clockOut"
+                    value={attendanceRecord?.clockOut ?? ""}
+                    onChange={handleTimeChange}
+                  />
+                </div>
+              </div>
+            
+          </fieldset>
+          
+          <div className="divider"></div>
+          <div className="text-center">
+            <button
+              className="btn btn-success btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
+              
+            >
+              계정 수정
+            </button>
+            &nbsp;&nbsp;&nbsp;
+            <button
+              className="btn btn-warning btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
+              
+            >
+              리셋
+            </button>
+          </div>
+        </div>
+
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+
+
+
+
+
+
     </div>
+
+
+
+
+
   );
 }

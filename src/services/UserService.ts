@@ -41,6 +41,27 @@ export type UserdataResponse = {
 	workEndTime: string;
 }
 
+export interface PageResponse<T> {
+  content : T[];
+  totalPages: number;
+  totalElements: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
+export type AttendanceResponse = {
+  email : string,
+  name : string,
+  empnum : string,
+  date : Date,
+  clockIn : string,
+  clockOut : string,
+  isLate : string,
+  isLeftEarly: string,
+  totalHours: number
+}
 
 export async function getRequiredDataOfRegister(): Promise<RegisterFormInfoRequest> {
   const token = localStorage.getItem("token");
@@ -160,7 +181,7 @@ export async function getDefaultImageFile(): Promise<File> {
   return new File([blob], "yellingcat.webp", { type: blob.type });
 }
 
-export async function findAndGetUserdata(empno:string): Promise<UserdataResponse> {
+export async function findAndGetUserdata(empno:string): Promise<UserdataResponse | string> {
   const token = localStorage.getItem("token");
   const response = await fetch(`${APIConfig}/admin/usermanagement/checkuser?empno=${empno}`, {
     method: "GET",
@@ -171,6 +192,57 @@ export async function findAndGetUserdata(empno:string): Promise<UserdataResponse
     credentials: "include",
   });
 
-  if (!response.ok) throw new Error("조회 실패");
+  if (!response.ok)
+  {
+    const errorText = await response.text();
+    return errorText || "조회 실패";
+  }
+  return await response.json();
+}
+
+export async function  getPagedUsers(page: number, size: number): Promise<PageResponse<UserdataResponse> | string> {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${APIConfig}/admin/usermanagement/userlist?page=${page-1}&size=${size}`, {
+      method: "GET",
+      headers: {
+        // "Content-Type": "application/json", // GET이므로 불필요
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok)
+    {
+      const errorText = await response.text();
+      return errorText || "조회 실패";
+    }
+    return await response.json();
+}
+
+export async function deleteUserByEmpno(empno:string): Promise<RegisterResponse> {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${APIConfig}/admin/usermanagement/userdelete?empnum=${empno}`, {
+    method: "DELETE",
+    headers: {
+      // "Content-Type": "application/json", // GET이므로 불필요
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+
+  return await response.json();
+}
+
+export async function findAttendanceByEmpnoNdate(empno:string, date : Date): Promise<AttendanceResponse> {
+  const token = localStorage.getItem("token");
+  const datestr = date.toISOString().split("T")[0];
+  const response = await fetch(`${APIConfig}/admin/usermanagement/findattendance?empnum=${empno}&adate=${datestr}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+
   return await response.json();
 }
