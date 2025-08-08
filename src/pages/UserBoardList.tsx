@@ -23,7 +23,7 @@ const BoardList: React.FC = () => {
   /* ───────── fetch list ───────── */
   useEffect(() => {
     if (!upperType) return;
-    fetch(`${APIConfig}/admin/board/list/byType?type=${upperType}&page=${currentPage}`)
+    fetch(`${APIConfig}/user/userboard/list/byType?type=${upperType}&page=${currentPage}`)
       .then(res => { if (!res.ok) throw new Error('list fetch fail'); return res.json(); })
       .then(data => { setPosts(data.list); setTotal(data.totalPage); })
       .catch(console.error);
@@ -32,14 +32,14 @@ const BoardList: React.FC = () => {
   /* ───────── handlers ───────── */
   const handleDelete = (id: number) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    fetch(`${APIConfig}/admin/board/delete/${id}`, { method: 'DELETE' })
+    fetch(`${APIConfig}/user/userboard/delete/${id}`, { method: 'DELETE' })
       .then(res => { if (!res.ok) throw new Error('delete fail'); setPosts(p => p.filter(v => v.id !== id)); })
       .catch(console.error);
   };
 
-  const goDetail = (id: number) => navigate(`/admin/board/detail/${id}/${type}`);
-  const goWrite  = ()            => navigate(`/admin/board/write/${type}`);
-  const goEdit   = (id: number) => navigate(`/admin/board/edit/${id}/${type}`);
+  const goDetail = (id: number) => navigate(`/user/userboard/detail/${id}/${type}`);
+  const goWrite  = ()            => navigate(`/user/userboard/write/${type}`);
+  const goEdit   = (id: number) => navigate(`/user/userboard/edit/${id}/${type}`);
 
   const boardTypeName = () => {
     switch (upperType) {
@@ -57,11 +57,11 @@ const BoardList: React.FC = () => {
       {/* 탭 메뉴 */}
       <div className="tabs justify-center mb-8">
         <button className={`tab tab-bordered ${upperType === 'NOTICE'  && 'tab-active font-semibold'}`}
-                onClick={() => navigate('/admin/board/notice')}>공지사항</button>
+                onClick={() => navigate('/user/userboard/notice')}>공지사항</button>
         <button className={`tab tab-bordered ${upperType === 'FREE'    && 'tab-active font-semibold'}`}
-                onClick={() => navigate('/admin/board/free')}>자유게시판</button>
+                onClick={() => navigate('/user/userboard/free')}>자유게시판</button>
         <button className={`tab tab-bordered ${upperType === 'SUGGEST' && 'tab-active font-semibold'}`}
-                onClick={() => navigate('/admin/board/suggest')}>건의사항</button>
+                onClick={() => navigate('/user/userboard/suggest')}>건의사항</button>
       </div>
 
       {/* 헤더 */}

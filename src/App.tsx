@@ -1,35 +1,37 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
-import LoginPage from './pages/LoginPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminLayout from './pages/AdminLayout';
-import MonthlySummary from './pages/MonthlySummary';
+
+import LoginPage        from './pages/LoginPage';
+import ProtectedRoute    from './components/ProtectedRoute';
+import AdminLayout       from './pages/AdminLayout';
+import MonthlySummary    from './pages/MonthlySummary';
 import AttendanceHistory from './pages/AttendanceHistory';
-import HomePage from './pages/HomePage';
-import UserManagement from './pages/UserManagement';
-import BoardList from './pages/BoardList';
-import BoardDetail from './pages/BoardDetail';
-import BoardWrite from './pages/BoardWrite';
-import BoardEdit from './pages/BoardEdit';
-
-
-import UserLayout from './pages/userpages/UserLayout';
+import HomePage          from './pages/HomePage';
+import UserManagement    from './pages/UserManagement';
+import AdminBoardList    from './pages/AdminBoardList';
+import BoardDetail       from './pages/BoardDetail';
+import BoardWrite        from './pages/BoardWrite';
+import BoardEdit         from './pages/BoardEdit';
+import UserBoardList    from './pages/UserBoardList';
+import UserLayout        from './pages/userpages/UserLayout';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 로그인 페이지 */}
+        {/* ───────── 로그인 ───────── */}
         <Route path="/" element={<LoginPage />} />
 
-        {/* 관리자 레이아웃 */}
+        {/* ───────── 관리자 레이아웃 ───────── */}
         <Route
           path="/admin"
           element={
             <ProtectedRoute requiredRole="ADMIN">
               <AdminLayout />
             </ProtectedRoute>
-          }>
+          }
+        >
+          {/* 대시보드(예시) */}
           <Route
             path="home"
             element={
@@ -39,20 +41,19 @@ function App() {
             }
           />
 
-          {/* 게시판 메뉴 및 기능 */}
-          <Route path="board" element={<Navigate to="/admin/board/notice" replace />} />
-
+          {/* ─ 게시판 ─ */}
+          
           <Route
-            path="board/:type"
+            path="adminboard/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
-                <BoardList />
+                <AdminBoardList />
               </ProtectedRoute>
             }
           />
 
           <Route
-            path="board/write/:type"
+            path="adminboard/write/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <BoardWrite />
@@ -60,9 +61,8 @@ function App() {
             }
           />
 
-          {/* ✅ 수정 라우트 추가 */}
           <Route
-            path="board/edit/:id/:type"
+            path="adminboard/edit/:id/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <BoardEdit />
@@ -71,7 +71,7 @@ function App() {
           />
 
           <Route
-            path="board/detail/:id/:type"
+            path="adminboard/detail/:id/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <BoardDetail />
@@ -79,7 +79,7 @@ function App() {
             }
           />
 
-          {/* 출결 및 관리 */}
+          {/* ─ 출결 및 관리 ─ */}
           <Route
             path="monthlysummary"
             element={
@@ -108,16 +108,28 @@ function App() {
           />
         </Route>
 
-
-        {/* 유저 레이아웃 */}
-          <Route
+        {/* ───────── 유저 레이아웃 ───────── */}
+        <Route
           path="/user"
           element={
             <ProtectedRoute requiredRole="USER">
               <UserLayout />
             </ProtectedRoute>
-          }
+          }>
+          {/* 필요 시 유저용 하위 라우트 추가 */}
+          {/* <Route path="board" element={<UserBoardList />} /> */}
+          {/* ─ 게시판 ─ */}
+
+
+          <Route
+            path="userboard/:type"
+            element={
+              <ProtectedRoute requiredRole="USER">
+                <UserBoardList />
+              </ProtectedRoute>
+            }
           />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
