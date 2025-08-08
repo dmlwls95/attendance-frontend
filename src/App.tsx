@@ -12,6 +12,7 @@ import AdminBoardList    from './pages/AdminBoardList';
 import BoardDetail       from './pages/BoardDetail';
 import BoardWrite        from './pages/BoardWrite';
 import BoardEdit         from './pages/BoardEdit';
+import UserBoardList    from './pages/UserBoardList';
 import UserLayout        from './pages/userpages/UserLayout';
 
 function App() {
@@ -41,10 +42,9 @@ function App() {
           />
 
           {/* ─ 게시판 ─ */}
-          <Route path="board" element={<Navigate to="/admin/board/notice" replace />} />
-
+          
           <Route
-            path="board/:type"
+            path="adminboard/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <AdminBoardList />
@@ -53,7 +53,7 @@ function App() {
           />
 
           <Route
-            path="board/write/:type"
+            path="adminboard/write/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <BoardWrite />
@@ -62,7 +62,7 @@ function App() {
           />
 
           <Route
-            path="board/edit/:id/:type"
+            path="adminboard/edit/:id/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <BoardEdit />
@@ -71,7 +71,7 @@ function App() {
           />
 
           <Route
-            path="board/detail/:id/:type"
+            path="adminboard/detail/:id/:type"
             element={
               <ProtectedRoute requiredRole="ADMIN">
                 <BoardDetail />
@@ -115,10 +115,20 @@ function App() {
             <ProtectedRoute requiredRole="USER">
               <UserLayout />
             </ProtectedRoute>
-          }
-        >
+          }>
           {/* 필요 시 유저용 하위 라우트 추가 */}
           {/* <Route path="board" element={<UserBoardList />} /> */}
+          {/* ─ 게시판 ─ */}
+
+
+          <Route
+            path="userboard/:type"
+            element={
+              <ProtectedRoute requiredRole="USER">
+                <UserBoardList />
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -21,7 +21,7 @@ export default function AdminLayout()
                             <li><a href="/admin/attendance">전체 출퇴근 기록</a></li>
                             {/* <li><a href="/admin/userdetail">사용자별 상세보기</a></li> */}
                             <li><a href="/admin/usermanagement">사용자 계정 관리</a></li>
-                            <li><a href="/admin/board">사내 게시판</a></li>
+                            <li><a href="/admin/adminboard/notice">사내 게시판</a></li>
                         </ul>
                     </div>
                 </div>

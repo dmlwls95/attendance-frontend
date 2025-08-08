@@ -32,14 +32,14 @@ const BoardList: React.FC = () => {
   /* ───────── handlers ───────── */
   const handleDelete = (id: number) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    fetch(`${APIConfig}/admin/board/delete/${id}`, { method: 'DELETE' })
+    fetch(`${APIConfig}/admin/adminboard/delete/${id}`, { method: 'DELETE' })
       .then(res => { if (!res.ok) throw new Error('delete fail'); setPosts(p => p.filter(v => v.id !== id)); })
       .catch(console.error);
   };
 
-  const goDetail = (id: number) => navigate(`/admin/board/detail/${id}/${type}`);
-  const goWrite  = ()            => navigate(`/admin/board/write/${type}`);
-  const goEdit   = (id: number) => navigate(`/admin/board/edit/${id}/${type}`);
+  const goDetail = (id: number) => navigate(`/admin/adminboard/detail/${id}/${type}`);
+  const goWrite  = ()            => navigate(`/admin/adminboard/write/${type}`);
+  const goEdit   = (id: number) => navigate(`/admin/adminboard/edit/${id}/${type}`);
 
   const boardTypeName = () => {
     switch (upperType) {
@@ -57,11 +57,11 @@ const BoardList: React.FC = () => {
       {/* 탭 메뉴 */}
       <div className="tabs justify-center mb-8">
         <button className={`tab tab-bordered ${upperType === 'NOTICE'  && 'tab-active font-semibold'}`}
-                onClick={() => navigate('/admin/board/notice')}>공지사항</button>
+                onClick={() => navigate('/admin/adminboard/notice')}>공지사항</button>
         <button className={`tab tab-bordered ${upperType === 'FREE'    && 'tab-active font-semibold'}`}
-                onClick={() => navigate('/admin/board/free')}>자유게시판</button>
+                onClick={() => navigate('/admin/adminboard/free')}>자유게시판</button>
         <button className={`tab tab-bordered ${upperType === 'SUGGEST' && 'tab-active font-semibold'}`}
-                onClick={() => navigate('/admin/board/suggest')}>건의사항</button>
+                onClick={() => navigate('/admin/adminboard/suggest')}>건의사항</button>
       </div>
 
       {/* 헤더 */}
