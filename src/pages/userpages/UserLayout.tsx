@@ -16,10 +16,10 @@ export default function UserLayout()
                         <ul
                             tabIndex={0}
                             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-                            <li><a href="/user">홈페이지</a></li>
-                            <li><a href="/user">주간 근로 분석</a></li>
-                            <li><a href="/user">월간 근로 분석</a></li>
-                            <li><a href="/user">기간별 출퇴근 관리</a></li>
+                            <li><a href="/user/home">홈페이지</a></li>
+                            <li><a href="/user/weeklysummary">주간 근로 분석</a></li>
+                            <li><a href="/user/monthlysummary">월간 근로 분석</a></li>
+                            <li><a href="/user/attendancehistory">기간별 출퇴근 관리</a></li>
                             <li><a href="/user/userboard/notice">사내 게시판</a></li>
                         </ul>
                     </div>
