@@ -23,7 +23,7 @@ const BoardList: React.FC = () => {
   /* ───────── fetch list ───────── */
   useEffect(() => {
     if (!upperType) return;
-    fetch(`${APIConfig}/admin/board/list/byType?type=${upperType}&page=${currentPage}`)
+    fetch(`${APIConfig}/admin/adminboard/list/byType?type=${upperType}&page=${currentPage}`)
       .then(res => { if (!res.ok) throw new Error('list fetch fail'); return res.json(); })
       .then(data => { setPosts(data.list); setTotal(data.totalPage); })
       .catch(console.error);

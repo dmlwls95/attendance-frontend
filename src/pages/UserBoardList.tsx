@@ -19,6 +19,7 @@ const BoardList: React.FC = () => {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const upperType = type?.toUpperCase();                   // NOTICE | FREE | SUGGEST
+  const isNotice = upperType ==='NOTICE';
 
   /* ───────── fetch list ───────── */
   useEffect(() => {
@@ -38,7 +39,13 @@ const BoardList: React.FC = () => {
   };
 
   const goDetail = (id: number) => navigate(`/user/userboard/detail/${id}/${type}`);
-  const goWrite  = ()            => navigate(`/user/userboard/write/${type}`);
+  const goWrite  = ()            => {
+    if(isNotice){
+      alert("공지사항은 관리자만 작성할 수 있습니다");
+      return;
+    }
+    navigate(`/user/userboard/write/${type}`);
+  };
   const goEdit   = (id: number) => navigate(`/user/userboard/edit/${id}/${type}`);
 
   const boardTypeName = () => {

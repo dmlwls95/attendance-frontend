@@ -129,6 +129,33 @@ function App() {
               </ProtectedRoute>
             }
           />
+                    <Route
+            path="userboard/write/:type"
+            element={
+              <ProtectedRoute requiredRole="USER">
+                <BoardWrite />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="userboard/edit/:id/:type"
+            element={
+              <ProtectedRoute requiredRole="USER">
+                <BoardEdit />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="userboard/detail/:id/:type"
+            element={
+              <ProtectedRoute requiredRole="USER">
+                <BoardDetail />
+              </ProtectedRoute>
+            }
+          />
+
         </Route>
       </Routes>
     </BrowserRouter>
