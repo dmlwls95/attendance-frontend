@@ -60,7 +60,10 @@ export type AttendanceResponse = {
   clockOut : string,
   isLate : string,
   isLeftEarly: string,
-  totalHours: number
+  isAbsence : string,
+  totalHours: number,
+  outStart : string,
+  outEnd : string
 }
 
 export async function getRequiredDataOfRegister(): Promise<RegisterFormInfoRequest> {
@@ -233,7 +236,7 @@ export async function deleteUserByEmpno(empno:string): Promise<RegisterResponse>
   return await response.json();
 }
 
-export async function findAttendanceByEmpnoNdate(empno:string, date : Date): Promise<AttendanceResponse> {
+export async function findAttendanceByEmpnoNdate(empno:string, date : Date): Promise<AttendanceResponse | string> {
   const token = localStorage.getItem("token");
   const datestr = date.toISOString().split("T")[0];
   const response = await fetch(`${APIConfig}/admin/usermanagement/findattendance?empnum=${empno}&adate=${datestr}`, {
@@ -243,6 +246,11 @@ export async function findAttendanceByEmpnoNdate(empno:string, date : Date): Pro
     },
     credentials: "include",
   });
+  if(!response.ok)
+  {
+    const errTxt = await response.text();
+    return errTxt || "조회 실패"
+  }
 
   return await response.json();
 }

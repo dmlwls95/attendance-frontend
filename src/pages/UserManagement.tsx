@@ -83,7 +83,7 @@ export default function UserManagement() {
   // 근태 기록 편집 모달
   const editAttendanceModal = useRef<HTMLDialogElement | null> (null);
   const [attendanceRecord , SetAttendanceRecord] = useState<AttendanceResponse | null>(null);
-
+  const [attendanceStatusRadio, SetAttendanceStatusRadio] = useState<number>(1);
 
 
   // 유저 데이터들 리스트
@@ -182,6 +182,15 @@ export default function UserManagement() {
       return;
     }
     const res = await findAttendanceByEmpnoNdate(attendanceRecord?.empnum, attendanceRecord?.date);
+    
+    if(typeof(res) === "string")
+    {
+      const json = JSON.parse(res);
+      
+      setRegiResMsg({success : false, message: json.message});
+      return;
+    }
+    
     SetAttendanceRecord( prev => {
       if(!prev) return prev;
       return {
@@ -190,11 +199,37 @@ export default function UserManagement() {
         clockOut : res.clockOut,
         isLate : res.isLate,
         isLeftEarly :res.isLeftEarly,
-        totalHours : res.totalHours
+        totalHours : res.totalHours,
+        outStart : res.outStart,
+        outEnd : res.outEnd,
+        isAbsence : res.isAbsence
       };
     });
-
+    SetAttendanceStatusRadio(0);
+    //출근
+    if(res.isLate != "1" && res.isLeftEarly != "1" && res.outStart.length == 0 && res.isAbsence != "1")
+    {
+      SetAttendanceStatusRadio(1);
+    }
+    //지각
+    else if(res.isLate =="1" && res.isLeftEarly != "1" && res.outStart.length == 0 && res.isAbsence != "1")
+    {
+      SetAttendanceStatusRadio(2);
+    }
+    //조퇴
+    else if(res.isLate != "1" && res.isLeftEarly =="1" && res.outStart.length > 0  && res.isAbsence != "1")
+    {
+      SetAttendanceStatusRadio(3);
+    }
+    //결근
+    else if(res.isAbsence =="1")
+    {
+      SetAttendanceStatusRadio(4);
+    }
   };
+  const handleAttendanceStatusRadio = (value : number) => {
+    SetAttendanceStatusRadio(value);
+  }
 
 
   // 입풋으로 입력된 사원번호로 유저 찾기 및 가져오기
@@ -350,7 +385,10 @@ export default function UserManagement() {
       clockOut : "",
       isLate : "",
       isLeftEarly : "",
-      totalHours : 0
+      isAbsence : "",
+      totalHours : 0,
+      outStart : "",
+      outEnd : "" 
     }));
 
     editAttendanceModal.current?.show();
@@ -1091,29 +1129,88 @@ export default function UserManagement() {
               <DayPicker className="react-day-picker" mode="single" selected={attendanceRecord?.date} onSelect={() => onClickAttendanceCalendar()} />
             </div>
 
-              <div className="grid grid-flow-row">
-                <div className="grid grid-cols-2 gap-4">
-                  <p className="text-sm">출근 시간</p>
-                  <p className="text-sm">퇴근 시간</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="time"
-                    className="input"
-                    name="clockIn"
-                    value={attendanceRecord?.clockIn ?? ""}
-                    onChange={handleTimeChange}
-                  />
-                  <input
-                    type="time"
-                    className="input"
-                    name="clockOut"
-                    value={attendanceRecord?.clockOut ?? ""}
-                    onChange={handleTimeChange}
-                  />
-                </div>
+
+            <div className="grid grid-flow-row">
+              <div className="grid grid-cols-2 gap-4">
+                <p className="text-sm">출근 시간</p>
+                <p className="text-sm">퇴근 시간</p>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="time"
+                  className="input"
+                  name="clockIn"
+                  value={attendanceRecord?.clockIn ?? ""}
+                  onChange={handleTimeChange}
+                />
+                <input
+                  type="time"
+                  className="input"
+                  name="clockOut"
+                  value={attendanceRecord?.clockOut ?? ""}
+                  onChange={handleTimeChange}
+                />
+              </div>
+            </div>
             
+          </fieldset>
+          <br></br>
+          <fieldset className="fieldset">
+            <div className="grid grid-flow-row">
+              <div className="grid grid-cols-2 gap-4">
+                <p className="text-sm">외출 시간</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="time"
+                  className="input"
+                  name="outStart"
+                />
+                <input
+                  type="time"
+                  className="input"
+                  name="outEnd"
+                />
+              </div>
+            </div>
+
+
+          </fieldset>
+          <br></br>
+
+          <fieldset className="fieldset">
+            <p className="text-sm">상태</p>
+            <div className="grid grid-cols-4">
+              <div className="grid grid-cols-2 text-center">
+                <p className="text-xs text-gray-400">출근</p>
+                <input type="radio" name="attendance-status" className="radio"
+                  checked={attendanceStatusRadio == 1}
+                  onChange={() => handleAttendanceStatusRadio(1)}
+                />
+              </div>
+              <div className="grid grid-cols-2 text-center">
+                <p className="text-xs text-gray-400">지각</p>
+                <input type="radio" name="attendance-status" className="radio" 
+                  checked={attendanceStatusRadio == 2}
+                  onChange={() => handleAttendanceStatusRadio(2)}
+                />
+              </div>
+              <div className="grid grid-cols-2 text-center">
+                <p className="text-xs text-gray-400">조퇴</p>
+                <input type="radio" name="attendance-status" className="radio"
+                  checked={attendanceStatusRadio == 3}
+                  onChange={() => handleAttendanceStatusRadio(3)}
+                />
+              </div>
+              <div className="grid grid-cols-2 text-center">
+                <p className="text-xs text-gray-400">결근</p>
+                <input type="radio" name="attendance-status" className="radio"
+                  checked={attendanceStatusRadio == 4}
+                  onChange={() => handleAttendanceStatusRadio(4)}
+                />
+              </div>
+
+            </div>
           </fieldset>
           
           <div className="divider"></div>
@@ -1122,7 +1219,7 @@ export default function UserManagement() {
               className="btn btn-success btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl"
               
             >
-              계정 수정
+              기록 수정
             </button>
             &nbsp;&nbsp;&nbsp;
             <button
