@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes} from 'react-router-dom';
 import './App.css';
 
 import LoginPage        from './pages/LoginPage';
@@ -14,6 +14,10 @@ import BoardWrite        from './pages/BoardWrite';
 import BoardEdit         from './pages/BoardEdit';
 import UserBoardList    from './pages/UserBoardList';
 import UserLayout        from './pages/userpages/UserLayout';
+import UserHomePage from './pages/userpages/UserHomePage';
+import UserWeeklySummary from './pages/userpages/UserWeeklySummary';
+import UserAttendanceHistory from './pages/userpages/UserAttendanceHistory';
+import UserMonthlySummary from './pages/userpages/UserMonthlySummary';
 
 function App() {
   return (
@@ -116,11 +120,50 @@ function App() {
               <UserLayout />
             </ProtectedRoute>
           }>
+          <Route
+            path='home'
+            element={
+              <ProtectedRoute requiredRole='USER'>
+                <UserHomePage/>
+              </ProtectedRoute>
+            }
+          >
+          </Route>
+
+          <Route
+            path='weeklysummary'
+            element={
+              <ProtectedRoute requiredRole='USER'>
+                <UserWeeklySummary/>
+              </ProtectedRoute>
+            }
+          >
+          </Route>
+
+          <Route
+            path='monthlysummary'
+            element={
+              <ProtectedRoute requiredRole='USER'>
+                <UserMonthlySummary/>
+              </ProtectedRoute>
+            }
+          >
+          </Route>
+
+          <Route
+            path='attendancehistory'
+            element={
+              <ProtectedRoute requiredRole='USER'>
+                <UserAttendanceHistory/>
+              </ProtectedRoute>
+            }
+          >
+          </Route>
+
+
           {/* 필요 시 유저용 하위 라우트 추가 */}
           {/* <Route path="board" element={<UserBoardList />} /> */}
           {/* ─ 게시판 ─ */}
-
-
           <Route
             path="userboard/:type"
             element={
@@ -130,6 +173,7 @@ function App() {
             }
           />
         </Route>
+
       </Routes>
     </BrowserRouter>
   );

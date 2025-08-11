@@ -29,7 +29,7 @@ export default function LoginPage()
                 navigate("/admin/home");
                 
             }else{
-                navigate("/user");
+                navigate("/user/home");
             }
 
 

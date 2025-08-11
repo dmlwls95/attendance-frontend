@@ -1,0 +1,46 @@
+import APIConfig from "../configs/API.config";
+
+
+// enums (백엔드 EventType/SourceType과 1:1 매칭)
+export type EventType =
+  | 'CLOCK_IN'
+  | 'BREAK_OUT'
+  | 'BREAK_IN'
+  | 'CLOCK_OUT'
+  | 'CORRECTION';
+
+export type SourceType = 'WEB' | 'MOBILE' | 'ADMIN' | 'BATCH';
+
+export interface AttendanceEventResponse {
+  eventType: EventType;
+  occurredAt: string;        // ISO-8601 문자열 (예: "2025-08-08T09:10:16.367Z")
+  source: SourceType;
+  ipOrDevice?: string | null;
+  userAgent?: string | null;
+  note?: string | null;
+  correlationId?: string | null;
+  createdAt: string;         // ISO-8601
+}
+
+
+export async function getRecommendedBoardList() {
+    
+}
+
+export async function getRecentAttendanceRecord() : Promise<AttendanceEventResponse[] | string> {
+    const token = localStorage.getItem("token");
+      const response = await fetch(`${APIConfig}/attendance/recent?howmany=${10}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+    
+      if (!response.ok)
+      {
+        const errorText = await response.text();
+        return errorText || "조회 실패";
+      }
+      return await response.json();
+}
