@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <style>
+      .glyph { fill: none; stroke: #10B981; stroke-width: 80; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+  <!-- Clock circle -->
+  <circle class="glyph" cx="512" cy="460" r="235"/>
+  <!-- Hour hand -->
+  <line class="glyph" x1="512" y1="460" x2="512" y2="285"/>
+  <!-- Minute hand -->
+  <line class="glyph" x1="512" y1="460" x2="723" y2="460"/>
+  <!-- Check mark -->
+  <polyline class="glyph" points="368,676 468,776 696,566"/>
+</svg>

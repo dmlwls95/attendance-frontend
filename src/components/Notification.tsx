@@ -9,7 +9,7 @@ export default function Notification() {
     useEffect(() => {
         // STOMP 클라이언트 생성
         const client = new Client({
-            brokerURL: 'ws://localhost:9090/ws',  // 실제 WebSocket URL
+            brokerURL: 'ws://localhost:3980/ws',  // 실제 WebSocket URL
             connectHeaders: {
                 Authorization: `Bearer ${localStorage.getItem("token") || ""}`
             },
