@@ -22,25 +22,47 @@ export interface AttendanceEventResponse {
   createdAt: string;         // ISO-8601
 }
 
+export interface BoardResponse {
+  id: number;
+  title: string;
+  content: string;
+  writeDate : string;
+  boardType : 'FREE' | 'NOTICE' | 'SUGGEST';
+  recmmendCount: number;
+}
 
-export async function getRecommendedBoardList() {
-    
+export async function getRecommendedBoardList() : Promise<BoardResponse[] | string>{
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${APIConfig}/user/userboard/recenttop`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+  
+    if (!response.ok)
+    {
+      const errorText = await response.text();
+      return errorText || "조회 실패";
+    }
+    return await response.json();
 }
 
 export async function getRecentAttendanceRecord() : Promise<AttendanceEventResponse[] | string> {
     const token = localStorage.getItem("token");
-      const response = await fetch(`${APIConfig}/attendance/recent?howmany=${10}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-      });
-    
-      if (!response.ok)
-      {
-        const errorText = await response.text();
-        return errorText || "조회 실패";
-      }
-      return await response.json();
+    const response = await fetch(`${APIConfig}/attendance/recent?howmany=${10}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+  
+    if (!response.ok)
+    {
+      const errorText = await response.text();
+      return errorText || "조회 실패";
+    }
+    return await response.json();
 }

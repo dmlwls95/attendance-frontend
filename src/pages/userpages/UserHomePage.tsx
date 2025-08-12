@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import { HiSpeakerphone } from "react-icons/hi";
+
 import { IoSunny } from "react-icons/io5";
 import { FaMoon } from "react-icons/fa";
-import { getRecentAttendanceRecord, type AttendanceEventResponse } from "../../services/UserHomepageService";
+import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList, type AttendanceEventResponse } from "../../services/UserHomepageService";
+import { useNavigate } from "react-router-dom";
+
 
 export default function UserHomePage()
 {
+    const navigate = useNavigate();
     const [nowClock, SetNowClock] = useState<Date>(new Date());
     const [userAttendanceLog, SetUserAttendanceLog] = useState<AttendanceEventResponse[]>();
-    
+    const [recentTopBoard, SetRecentTopBoard] = useState<BoardResponse[]>();
 
     useEffect(() => {
         const id = setInterval(() => {
@@ -26,52 +29,36 @@ export default function UserHomePage()
             SetUserAttendanceLog(res);
         })();
     },[])
+
+    useEffect(() => {
+        (async () => {
+            const res = await getRecommendedBoardList();
+            if(typeof(res)==="string"){
+                return;
+            }
+
+            SetRecentTopBoard(res);
+        })();
+    }, [])
+
+    const onClickBoardTitle = (id : number, type: string) =>{
+        navigate(`/user/userboard/detail/${id}/${type}`);
+
+    }
    
     return (
         <div>
-            <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-1">
-                    <div className="card bg-base-100 shadow-sm card-border">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="col-span-1 md:col-span-1">
+                    <div className="card  bg-base-100 shadow-sm card-border">
                         <div className="card-body">
-                            <span className="badge badge-xs badge-warning">Most Popular</span>
-                            <div className="flex justify-between">
-                            <h2 className="text-3xl font-bold">Premium</h2>
-                            <span className="text-xl">$29/mo</span>
-                            </div>
-                            <ul className="mt-6 flex flex-col gap-2 text-xs">
-                            <li>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                <span>High-resolution image generation</span>
-                            </li>
-                            <li>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                <span>Customizable style templates</span>
-                            </li>
-                            <li>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                <span>Batch processing capabilities</span>
-                            </li>
-                            <li>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                <span>AI-driven image enhancements</span>
-                            </li>
-                            <li className="opacity-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                <span className="line-through">Seamless cloud integration</span>
-                            </li>
-                            <li className="opacity-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="size-4 me-2 inline-block text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                <span className="line-through">Real-time collaboration tools</span>
-                            </li>
-                            </ul>
-                            <div className="mt-6">
-                            </div>
+                            
                         </div>
-                        </div>
+                    </div>
 
                 </div>
-                <div className="col-span-2">
-                    <div className="card bg-base-100 shadow-sm card-border">
+                <div className="col-span-1 md:col-span-2">
+                    <div className="card  bg-base-100 shadow-sm card-border">
                         <div className="grid grid-rows-2 justify-center gap-4">
                             <div className="grid grid-cols-3">
                                 <div className="col-span-2 gap-3">
@@ -105,7 +92,7 @@ export default function UserHomePage()
             <br></br>
             <div className="grid grid-cols-2 gap-3">
                 <div className="card bg-base-100 shadow-sm card-border">
-                    <div className="card-body">
+                    <div className="card-body whitespace-nowrap">
                         {/* 헤더 */}
                         <li className="list-row font-semibold text-sm border-b py-2">
                             <div className="grid grid-cols-9 gap-20 text-center">
@@ -126,8 +113,30 @@ export default function UserHomePage()
                     </div>
                 </div>
                 <div className="card bg-base-100 shadow-sm card-border">
-                    <div className="card-body">
-                            <p className="text-sm font-bold"><HiSpeakerphone />社内 NEWS</p>
+                    <div className="card-body whitespace-nowrap">
+                        <p className="text-sm font-bold">인기글</p>
+
+                        {/* 헤더 */}
+                        <li className="list-row font-semibold text-sm border-b py-2">
+                            <div className="grid grid-cols-3 gap-5 text-center">
+                                <div></div>
+                                <div>제목</div>
+                                <div>등록일자</div>
+                            </div>
+                        </li>
+                        {
+                            recentTopBoard?.map((record, idx) => (
+                                <li className="list-row text-sm border-b py-2" key={idx}>
+                                    <div className="grid grid-cols-3 gap-5 text-center">
+                                        <div>{record.id}</div>
+                                        <button className="btn btn-link" onClick={() => onClickBoardTitle(record.id, record.boardType)}>{record.title}</button>
+                                        <div>{new Date(record.writeDate).toLocaleDateString("ko-KR")}</div>
+                                    </div>
+                                </li>
+                            ))
+                        }
+
+
                         
                         
                     </div>
