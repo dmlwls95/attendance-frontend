@@ -67,6 +67,7 @@ export async function getRecentAttendanceRecord() : Promise<AttendanceEventRespo
     return await response.json();
 }
 
+//출근 여부 확인
 export async function hasCheckedInToday(): Promise<boolean> {
   const token = localStorage.getItem("token");
   const response = await fetch(`${APIConfig}/attendance/hascheckin`, {
@@ -83,6 +84,7 @@ export async function hasCheckedInToday(): Promise<boolean> {
   }
   return await response.json();
 }
+
 
 //출근
 export async function postCheckIn() {
@@ -118,6 +120,63 @@ export async function postCheckOut() {
   {
     const errorText = await response.text();
     return errorText || "조회 실패";
+  }
+  return await response.json();
+}
+
+
+//외출
+export async function postOutingStart() {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${APIConfig}/attendance/outingstart`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok)
+  {
+    const errorText = await response.text();
+    return errorText || "조회 실패";
+  }
+  return await response.json();
+}
+
+//복귀
+export async function postOutingEnd() {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${APIConfig}/attendance/outingend`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok)
+  {
+    const errorText = await response.text();
+    return errorText || "조회 실패";
+  }
+  return await response.json();
+}
+
+//외출 여부 확인
+export async function hasBreakOut(): Promise<boolean> {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${APIConfig}/attendance/hasbreakout`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok)
+  {
+    console.error(response.statusText);
   }
   return await response.json();
 }

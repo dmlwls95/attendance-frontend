@@ -2,10 +2,19 @@ import { useCallback, useEffect, useState } from "react";
 
 import { IoSunny } from "react-icons/io5";
 import { FaMoon } from "react-icons/fa";
-import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList, type AttendanceEventResponse, postCheckIn, hasCheckedInToday, postCheckOut } from "../../services/UserHomepageService";
+import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList, type AttendanceEventResponse, postCheckIn, hasCheckedInToday, postCheckOut, postOutingStart, hasBreakOut, postOutingEnd } from "../../services/UserHomepageService";
 import { useNavigate } from "react-router-dom";
 import { useAttendanceStomp } from "../../hooks/useAttendanceStomp";
 
+interface AttendanceSignal {
+    type : | 'CLOCK_IN'
+  | 'BREAK_OUT'
+  | 'BREAK_IN'
+  | 'CLOCK_OUT'
+  | 'CORRECTION';
+    at : Date;
+
+}
 export default function UserHomePage()
 {
     const navigate = useNavigate();
@@ -15,6 +24,8 @@ export default function UserHomePage()
 
     const [hasAlreadyChecked, SetHasAlreadyChecked] = useState<boolean>();
     const [loading, setLoading] = useState(false);
+
+    const [hasOutingStarted, SetHasOutingStarted] = useState<boolean>();
 
     //시계 설정
     useEffect(() => {
@@ -61,13 +72,30 @@ export default function UserHomePage()
         })();
     },[])
 
+    useEffect(() => {
+        (async () => {
+            const res = await hasBreakOut();
+            SetHasOutingStarted(res);
+        })();
+    },[])
+
     // stomp 수신시에 서버에 다시 물어보고 결과로만 업데이트
-    const onLiveEvent = useCallback((/* _msg */) => {
-        hasCheckedInToday()
-        .then(SetHasAlreadyChecked)
-        .catch(console.error)
+    const onLiveEvent = useCallback((msg : AttendanceSignal) => {
+        if(msg.type == 'CLOCK_IN')
+        {
+            hasCheckedInToday()
+            .then(SetHasAlreadyChecked)
+            .catch(console.error)
+        }else if(msg.type =='BREAK_OUT')
+        {
+            hasBreakOut()
+            .then(SetHasOutingStarted)
+            .catch(console.error)
+        }
     }, []);
     useAttendanceStomp(onLiveEvent);
+
+    
 
     
 
@@ -91,6 +119,22 @@ export default function UserHomePage()
 
         })();
     }
+
+    //조퇴
+    const onClickOuting = () => {
+        (async () => {
+            await postOutingStart();
+        })();
+    }
+
+    //복귀
+    const onClickOutingEnd = () => {
+        (async () => {
+            await postOutingEnd();
+        })();
+    }
+
+    
    
     return (
         <div>
@@ -125,8 +169,8 @@ export default function UserHomePage()
                                     </div>
                                 </div>
 
-                                <button className="btn btn-warning h-32 w-40 font-bold text-4xl">조퇴</button>
-                                <button className="btn btn-info h-32 w-40 font-bold text-4xl">외출</button>
+                                <button className="btn btn-info h-32 w-40 font-bold text-4xl" onClick={onClickOuting} disabled={loading || hasOutingStarted === true}>외출</button>
+                                <button className="btn btn-info h-32 w-40 font-bold text-4xl" onClick={onClickOutingEnd} disabled={loading || hasOutingStarted === false}>복귀</button>
                             </div>
                         </div>
                         
