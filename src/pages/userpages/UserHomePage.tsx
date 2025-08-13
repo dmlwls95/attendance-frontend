@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { IoSunny } from "react-icons/io5";
 import { FaMoon } from "react-icons/fa";
-import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList, type AttendanceEventResponse, postCheckIn, hasCheckedInToday } from "../../services/UserHomepageService";
+import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList, type AttendanceEventResponse, postCheckIn, hasCheckedInToday, postCheckOut } from "../../services/UserHomepageService";
 import { useNavigate } from "react-router-dom";
 import { useAttendanceStomp } from "../../hooks/useAttendanceStomp";
 
@@ -84,6 +84,13 @@ export default function UserHomePage()
             }
         })();
     }
+    //퇴근
+    const onClickClockOut = () => {
+        (async () => {
+            await postCheckOut();
+
+        })();
+    }
    
     return (
         <div>
@@ -103,7 +110,7 @@ export default function UserHomePage()
                                 <div className="col-span-2 gap-3">
                                     <button className="btn btn-accent h-32 w-40 font-bold text-4xl" onClick={onClickClockIn} disabled={loading || hasAlreadyChecked === true} title={hasAlreadyChecked? "이미 출근 했습니다":undefined} ><IoSunny />출근</button>
                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <button className="btn btn-error h-32 w-40 font-bold text-4xl"><FaMoon />퇴근</button>
+                                    <button className="btn btn-error h-32 w-40 font-bold text-4xl" onClick={onClickClockOut}><FaMoon />퇴근</button>
                                 </div>
                                 <div className="col-span-1">
 
