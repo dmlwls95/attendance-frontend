@@ -92,7 +92,7 @@ const BoardList: React.FC = () => {
             {posts.length ? (
               posts.map((p, i) => (
                 <tr key={p.id}>
-                  <td className="text-center">{currentPage * 10 + i + 1}</td>
+                  <td className="text-center">{p.id}</td>
                   <td className="cursor-pointer hover:underline" onClick={() => goDetail(p.id)}>{p.title}</td>
                   <td className="text-center">{p.writer}</td>
                   <td className="text-center">{p.writeDate?.substring(0, 10)}</td>

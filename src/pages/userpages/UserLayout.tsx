@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import NavMemberCard from "../../components/NavMemberCard";
-import NotificationUI from "../../components/Notification"; 
+import Notification from "../../components/Notification"; 
 
 export default function UserLayout()
 {
@@ -29,8 +29,8 @@ export default function UserLayout()
                     <a className="btn btn-ghost text-xl">유저 페이지</a>
                 </div>
                 <div className="navbar-end flex items-center space-x-4">
-                    <NotificationUI />
-                </div>
+                    <Notification/>
+                </div> 
                 <div className="navbar-end">
                     {NavMemberCard()}
                 </div>
