@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Client } from '@stomp/stompjs';
 import axios from 'axios';
+import { createStompClient } from '../socket/stompClient';
 import APIConfig from '../configs/API.config';
 import './NotificationDropdown.css';
 
@@ -9,14 +10,7 @@ export default function Notification() {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
 
-    const client = new Client({
-        brokerURL: 'ws://localhost:9090/ws',
-        reconnectDelay: 5000,
-        connectHeaders: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
-        debug: function (str) {
-            console.log(str);
-        }
-    });
+    const client = createStompClient();
 
     const connectSocket = () => {
         client.subscribe('/user/queue/notification', (message) => {
@@ -47,13 +41,13 @@ export default function Notification() {
             setUnreadCount((unreadCount) => unreadCount-1);
         }
         
-        /*
+        
         window.open(
         '/user/userboard/detail/1/notice',
         '_blank',
         'width=600,height=900,left=100,top=100'
         );
-        */
+        
     }
 
     return (
