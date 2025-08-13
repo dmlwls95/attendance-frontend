@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { IoSunny } from "react-icons/io5";
 import { FaMoon } from "react-icons/fa";
-import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList, type AttendanceEventResponse } from "../../services/UserHomepageService";
+import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList, type AttendanceEventResponse, postCheckIn, hasCheckedInToday } from "../../services/UserHomepageService";
 import { useNavigate } from "react-router-dom";
-
+import { useAttendanceStomp } from "../../hooks/useAttendanceStomp";
 
 export default function UserHomePage()
 {
@@ -13,6 +13,10 @@ export default function UserHomePage()
     const [userAttendanceLog, SetUserAttendanceLog] = useState<AttendanceEventResponse[]>();
     const [recentTopBoard, SetRecentTopBoard] = useState<BoardResponse[]>();
 
+    const [hasAlreadyChecked, SetHasAlreadyChecked] = useState<boolean>();
+    const [loading, setLoading] = useState(false);
+
+    //시계 설정
     useEffect(() => {
         const id = setInterval(() => {
             SetNowClock(new Date());
@@ -20,6 +24,8 @@ export default function UserHomePage()
         return (() => clearInterval(id));
     }, [])
 
+
+    // 유저 로그 가져오기
     useEffect(() => {
         (async () => {
             const res = await getRecentAttendanceRecord();
@@ -30,6 +36,7 @@ export default function UserHomePage()
         })();
     },[])
 
+    //보드 리스트 가져오기
     useEffect(() => {
         (async () => {
             const res = await getRecommendedBoardList();
@@ -41,9 +48,41 @@ export default function UserHomePage()
         })();
     }, [])
 
+    //인기글 이동 함수
     const onClickBoardTitle = (id : number, type: string) =>{
         navigate(`/user/userboard/detail/${id}/${type}`);
+    }
 
+    // 최초 로딩시 서버에 출근 확인
+    useEffect(() => {
+        (async () => {
+            const res = await hasCheckedInToday();
+            SetHasAlreadyChecked(res);
+        })();
+    },[])
+
+    // stomp 수신시에 서버에 다시 물어보고 결과로만 업데이트
+    const onLiveEvent = useCallback((/* _msg */) => {
+        hasCheckedInToday()
+        .then(SetHasAlreadyChecked)
+        .catch(console.error)
+    }, []);
+    useAttendanceStomp(onLiveEvent);
+
+    
+
+    //출근
+    const onClickClockIn = () => {
+        (async () => {
+            try{
+                setLoading(true);
+                await postCheckIn();
+            }finally{
+                const checked = await hasCheckedInToday();
+                SetHasAlreadyChecked(checked);
+                setLoading(false);
+            }
+        })();
     }
    
     return (
@@ -62,7 +101,7 @@ export default function UserHomePage()
                         <div className="grid grid-rows-2 justify-center gap-4">
                             <div className="grid grid-cols-3">
                                 <div className="col-span-2 gap-3">
-                                    <button className="btn btn-accent h-32 w-40 font-bold text-4xl"><IoSunny />출근</button>
+                                    <button className="btn btn-accent h-32 w-40 font-bold text-4xl" onClick={onClickClockIn} disabled={loading || hasAlreadyChecked === true} title={hasAlreadyChecked? "이미 출근 했습니다":undefined} ><IoSunny />출근</button>
                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                     <button className="btn btn-error h-32 w-40 font-bold text-4xl"><FaMoon />퇴근</button>
                                 </div>

@@ -66,3 +66,39 @@ export async function getRecentAttendanceRecord() : Promise<AttendanceEventRespo
     }
     return await response.json();
 }
+
+export async function hasCheckedInToday(): Promise<boolean> {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${APIConfig}/attendance/hascheckin`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok)
+  {
+    console.error(response.statusText);
+  }
+  return await response.json();
+}
+
+//출근
+export async function postCheckIn() {
+  const token = localStorage.getItem("token");
+    const response = await fetch(`${APIConfig}/attendance/clock-in`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    });
+  
+    if (!response.ok)
+    {
+      const errorText = await response.text();
+      return errorText || "조회 실패";
+    }
+    return await response.json();
+}
