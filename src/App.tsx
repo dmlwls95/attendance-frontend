@@ -28,7 +28,7 @@ function App() {
 
         {/* ───────── 관리자 레이아웃 ───────── */}
         <Route
-          path="/admin"
+          path="admin"
           element={
             <ProtectedRoute requiredRole="ADMIN">
               <AdminLayout />

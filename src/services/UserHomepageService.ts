@@ -29,7 +29,9 @@ export interface BoardResponse {
   writeDate : string;
   boardType : 'FREE' | 'NOTICE' | 'SUGGEST';
   recmmendCount: number;
+  writer : string;
 }
+
 
 export async function getRecommendedBoardList() : Promise<BoardResponse[] | string>{
     const token = localStorage.getItem("token");
