@@ -11,11 +11,13 @@ import { useEffect, useState } from "react";
 import { getChartData, getWorkingList, type AdminHomepageChartDataResponse, type WorkingRowDTO, type WorkingStatus } from "../services/AdminHomepageService";
 import { getRecommendedBoardList, type BoardResponse } from "../services/UserHomepageService";
 import type { PageResponse } from "../services/UserService";
+import { useNavigate } from "react-router-dom";
 
 
 
 
 export default function HomePage() {
+    const navigate = useNavigate();
 
     //
     const [data, setData] = useState<AdminHomepageChartDataResponse | null>(null);
@@ -85,7 +87,10 @@ export default function HomePage() {
 
     //보드 리스트
     //보드 
-    
+    //인기글 이동 함수
+    const onClickBoardTitle = (id : number, type: string) =>{
+        navigate(`/admin/adminboard/detail/${id}/${type}`);
+    }
 
 
     //type SummaryItem = { label: string; value: number; key: string };
@@ -284,7 +289,11 @@ export default function HomePage() {
                     {recentTopBoard?.map((n) => (
                       <tr key={n.id}>
                         <td>{n.id}</td>
-                        <td className="truncate">{n.title}</td>
+                        <td className="truncate" onClick={() => onClickBoardTitle(n.id, n.boardType)}>
+                          <button className="text-left w-full text-ellipsis overflow-hidden hover:underline">
+                            {n.title}
+                          </button>
+                        </td>
                         <td className="text-right pr-6">{n.writer}</td>
                       </tr>
                     ))}
