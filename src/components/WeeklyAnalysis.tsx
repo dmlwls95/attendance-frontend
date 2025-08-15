@@ -3,50 +3,61 @@ import {
   PieChart, Pie, Cell 
 } from 'recharts';
 
-type ColorKeys = '근무시간' | '잔업시간' | '잔여시간' | '투명';
+type ColorKeys = '勤務時間' | '残業時間' | '残り時間' | '透明';
 
-const barData: { name: string; 근무시간: number; 잔업시간: number; 잔여시간: number }[] = [
-  { name: '월', 근무시간: 8, 잔업시간: 2, 잔여시간: 0 },
-  { name: '화', 근무시간: 7, 잔업시간: 3, 잔여시간: 0 },
-  { name: '수', 근무시간: 6, 잔업시간: 4, 잔여시간: 0 },
-  { name: '목', 근무시간: 8, 잔업시간: 2, 잔여시간: 0 },
-  { name: '금', 근무시간: 9, 잔업시간: 1, 잔여시간: 0 },
-  { name: '토', 근무시간: 0, 잔업시간: 0, 잔여시간: 10 },
-  { name: '일', 근무시간: 0, 잔업시간: 0, 잔여시간: 10 },
+type WeeklyAnalysisProps = {
+  startDate: string; // 例: "2025-08-12"
+  endDate: string;   // 例: "2025-08-18"
+};
+
+const barData: { name: string; 勤務時間: number; 残業時間: number; 残り時間: number }[] = [
+  { name: '月', 勤務時間: 8, 残業時間: 2, 残り時間: 0 },
+  { name: '火', 勤務時間: 7, 残業時間: 3, 残り時間: 0 },
+  { name: '水', 勤務時間: 6, 残業時間: 4, 残り時間: 0 },
+  { name: '木', 勤務時間: 8, 残業時間: 2, 残り時間: 0 },
+  { name: '金', 勤務時間: 9, 残業時間: 1, 残り時間: 0 },
+  { name: '土', 勤務時間: 0, 残業時間: 0, 残り時間: 10 },
+  { name: '日', 勤務時間: 0, 残業時間: 0, 残り時間: 10 },
 ];
 
-const totalOvertime = barData.reduce((sum, day) => sum + day.잔업시간, 0);
-const maxOvertime = 24; // 하루 최대 잔업 가능 시간 (투명 부분 계산용)
+const totalOvertime = barData.reduce((sum, day) => sum + day.残業時間, 0);
+const maxOvertime = 24; // 1日の最大残業可能時間（透明部分の計算用）
 
 const workAndRemainData: { name: ColorKeys; value: number }[] = [
-  { name: '근무시간', value: barData.reduce((sum, day) => sum + day.근무시간, 0) },
-  { name: '잔여시간', value: barData.reduce((sum, day) => sum + day.잔여시간, 0) },
+  { name: '勤務時間', value: barData.reduce((sum, day) => sum + day.勤務時間, 0) },
+  { name: '残り時間', value: barData.reduce((sum, day) => sum + day.残り時間, 0) },
 ];
 
 const overtimeData: { name: ColorKeys; value: number }[] = [
-  { name: '잔업시간', value: totalOvertime },
-  { name: '투명', value: maxOvertime - totalOvertime },
+  { name: '残業時間', value: totalOvertime },
+  { name: '透明', value: maxOvertime - totalOvertime },
 ];
 
 const COLORS: Record<ColorKeys, string> = {
-  근무시간: '#87CEFA', // 옅은 하늘색
-  잔업시간: '#6A0DAD', // 진한 보라색
-  잔여시간: '#A9A9A9', // 짙은 회색
-  투명: 'transparent',
+  勤務時間: '#87CEFA', // 薄い空色
+  残業時間: '#6A0DAD', // 濃い紫色
+  残り時間: '#A9A9A9', // 濃いグレー
+  透明: 'transparent',
 };
 
-const WeeklyAnalysis = () => {
+// 日付文字列を日本式フォーマットに変換する関数
+const formatDateToJapanese = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-');
+  return `${year}年${month}月${day}日`;
+};
+
+const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
   return (
     <div style={{ marginBottom: 40, border: '1px solid #ccc', borderRadius: 8, padding: 20 }}>
-      <h3 style={{ marginBottom: 10, fontWeight: 'bold' }}>주간 근무 시간 합계</h3>
+      <h3 style={{ marginBottom: 10, fontWeight: 'bold' }}>週間勤務時間合計</h3>
 
-      {/* 날짜 위치 위쪽 중앙으로 변경 */}
+      {/* 日付の位置を上部中央に変更、日本式 */}
       <div style={{ textAlign: 'center', marginBottom: 10, fontSize: 14, fontWeight: 'bold' }}>
-        2025-00-00 ~ 2025-00-00
+        【 {formatDateToJapanese(startDate)} ～ {formatDateToJapanese(endDate)} 】
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {/* 막대그래프 */}
+        {/* 棒グラフ */}
         <div style={{ width: '70%', height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -57,18 +68,18 @@ const WeeklyAnalysis = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="근무시간" stackId="a" fill={COLORS.근무시간} />
-              <Bar dataKey="잔업시간" stackId="a" fill={COLORS.잔업시간} />
-              <Bar dataKey="잔여시간" stackId="a" fill={COLORS.잔여시간} />
+              <Bar dataKey="勤務時間" stackId="a" fill={COLORS.勤務時間} />
+              <Bar dataKey="残業時間" stackId="a" fill={COLORS.残業時間} />
+              <Bar dataKey="残り時間" stackId="a" fill={COLORS.残り時間} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* 도넛차트 */}
+        {/* ドーナツチャート */}
         <div style={{ width: 200, height: 200, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {/* 외부 도넛: 잔업시간만큼 보라색, 나머지는 투명 */}
+              {/* 外側ドーナツ：残業時間分は紫、残りは透明 */}
               <Pie
                 data={overtimeData}
                 cx="50%"
@@ -87,7 +98,7 @@ const WeeklyAnalysis = () => {
                 ))}
               </Pie>
 
-              {/* 내부 도넛: 근무시간/잔여시간 */}
+              {/* 内側ドーナツ：勤務時間と残り時間 */}
               <Pie
                 data={workAndRemainData}
                 cx="50%"
@@ -108,33 +119,31 @@ const WeeklyAnalysis = () => {
             </PieChart>
           </ResponsiveContainer>
 
-  <div
-  style={{
-    fontSize: 12,
-    marginTop: 10,
-    width: '200px',
-    maxHeight: '70px',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    wordBreak: 'break-word',
-    whiteSpace: 'normal',
-    paddingRight: 8,
-    boxSizing: 'border-box',
-    flexShrink: 0,
-  }}
->
-  <div>
-    <span style={{ color: COLORS.근무시간, wordBreak: 'break-word', whiteSpace: 'normal' }}>■</span> 근무시간 : {workAndRemainData[0].value} 시간
-  </div>
-  <div>
-    <span style={{ color: COLORS.잔여시간, wordBreak: 'break-word', whiteSpace: 'normal' }}>■</span> 잔여시간 : {workAndRemainData[1].value} 시간
-  </div>
-  <div>
-    <span style={{ color: COLORS.잔업시간, wordBreak: 'break-word', whiteSpace: 'normal' }}>■</span> 잔업시간 : {totalOvertime} 시간
-  </div>
-</div>
-
-
+          <div
+            style={{
+              fontSize: 12,
+              marginTop: 10,
+              width: '200px',
+              maxHeight: '70px',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              wordBreak: 'break-word',
+              whiteSpace: 'normal',
+              paddingRight: 8,
+              boxSizing: 'border-box',
+              flexShrink: 0,
+            }}
+          >
+            <div>
+              <span style={{ color: COLORS.勤務時間 }}>■</span> 勤務時間 : {workAndRemainData[0].value} 時間
+            </div>
+            <div>
+              <span style={{ color: COLORS.残り時間 }}>■</span> 残り時間 : {workAndRemainData[1].value} 時間
+            </div>
+            <div>
+              <span style={{ color: COLORS.残業時間 }}>■</span> 残業時間 : {totalOvertime} 時間
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -5,15 +5,15 @@ import WeeklyLateStatus from '../components/WeeklyLateStatus';
 const WeeklyAttendStatus = () => {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: 20, maxWidth: 900, margin: '0 auto' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: 20 }}>주간 근태 현황</h1>
+      <h1 style={{ textAlign: 'center', marginBottom: 20 }}>週間勤怠状況</h1>
 
-      {/* 주간 근로 분석 차트 */}
-      <WeeklyAnalysis />
+      {/* 週間勤労分析チャート */}
+      <WeeklyAnalysis startDate="2025-08-12" endDate="2025-08-18" />
 
-      {/* 주간 테이블 */}
+      {/* 週間テーブル */}
       <WeeklyTable />
 
-      {/* 지각 및 결근 현황 */}
+      {/* 遅刻および欠勤状況 */}
       <WeeklyLateStatus />
     </div>
   );
