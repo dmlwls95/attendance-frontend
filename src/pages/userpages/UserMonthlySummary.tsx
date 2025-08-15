@@ -1,290 +1,413 @@
-// src/pages/userpages/UserMonthlySummary.tsx
+// src/pages/UserMonthlySummary.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import dayjs from "dayjs";
 import {
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
+  Tooltip as PieTooltip,
 } from "recharts";
 
-/** -----------------------------
- *  ① 타입 정의 (데이터 모양)
- * ----------------------------- */
-type MonthlySummary = {
-  month: string;              // '2025-08' 형태(표시용)
-  workDays: number;           // 출근일
-  lateDays: number;           // 지각일
-  absenceDays: number;        // 결근일
-  holidays: number;           // 휴일
-  attendanceRate: number;     // 출근율(%) 0~100
+// ───────────────── 색상(설계서 톤과 유사)
+const COLORS = {
+  donutAttend: "#1F2937", // 진회색(출근)
+  donutLate: "#9CA3AF",   // 중간 회색(지각)
+  donutAbsent: "#6B7280", // 진한 회색(결근)
+  donutHoliday: "#F8B4C6",// 연핑크(휴일)
+  barBase: "#E5E7EB",     // 소정근로(연회색)
+  barOver: "#8DA2FB",     // 잔업(파스텔 보라-파랑)
+  barHoliday: "#F8B4C6",  // 휴일근로(연핑크)
+  barNight: "#111827",    // 야간(매우 진회색)
 };
 
-type WorkTimeSummary = {
-  baseMinutes: number;        // 소정근로(분)
-  overtimeMinutes: number;    // 잔업(분)
-  holidayMinutes: number;     // 휴일근로(분)
-  nightMinutes: number;       // 야간근로(분)
+const API_BASE =
+  (import.meta as any)?.env?.VITE_API_BASE || "http://localhost:3980";
+const DEFAULT_WORK_START = "09:00";
+
+// ── 응답 타입
+type MonthlyApi = {
+  totalDaysWorked: number;
+  totalHours: number;
+  averageHours: number;
+  missedDays: number;
+};
+type RangeItem = {
+  workdate: string;
+  clock_in: string | null;
+  clock_out: string | null;
+  workMinute: number;
+  overtimeMinute: number;
+};
+type RangeApi = {
+  workDays: number;
+  workTimes: number;   // 총 근무(분)
+  overTimes: number;   // 잔업(분)
+  absenceDays: number; // 결근(일)
+  historyList: RangeItem[];
 };
 
-type Totals = {
-  monthlyLateMinutes: number;
-  monthlyOvertimeMinutes: number;
-  monthlyTotalMinutes: number;
-  weeklyLateMinutes: number;
-  weeklyOvertimeMinutes: number;
-  weeklyTotalMinutes: number;
-};
+// ── 유틸
+function mmToHHmm(mm: number) {
+  if (!Number.isFinite(mm) || mm <= 0) return "00시간 00분";
+  const h = Math.floor(mm / 60);
+  const m = Math.round(mm % 60);
+  return `${String(h).padStart(2, "0")}시간 ${String(m).padStart(2, "0")}분`;
+}
+function pct(part: number, total: number) {
+  if (!total || total <= 0) return 0;
+  return Math.round((Math.max(part, 0) / total) * 100);
+}
 
-/** -----------------------------
- *  ② 유틸: 분→"nn시간 nn분"
- * ----------------------------- */
-const mmToHHmm = (m: number) => {
-  const h = Math.floor(m / 60);
-  const mm = m % 60;
-  return `${String(h).padStart(2, "0")}시간 ${String(mm).padStart(2, "0")}분`;
-};
+const UserMonthlySummary: React.FC = () => {
+  const today = dayjs();
+  const monthStartStr = today.startOf("month").format("YYYY-MM-DD");
+  const monthEndStr = today.endOf("month").format("YYYY-MM-DD");
+  const weekStartStr = today.subtract(6, "day").format("YYYY-MM-DD");
+  const weekEndStr = today.format("YYYY-MM-DD");
 
-/** -----------------------------
- *  ③ 가짜데이터(백엔드 준비 전)
- * ----------------------------- */
-const MOCK_MONTHLY: MonthlySummary = {
-  month: dayjs().format("YYYY-MM"),
-  workDays: 15,
-  lateDays: 3,
-  absenceDays: 1,
-  holidays: 4,
-  attendanceRate: 83,
-};
-
-const MOCK_TIMES: WorkTimeSummary = {
-  baseMinutes: 160 * 60,
-  overtimeMinutes: 22 * 60,
-  holidayMinutes: 8 * 60,
-  nightMinutes: 12 * 60,
-};
-
-const MOCK_TOTALS: Totals = {
-  monthlyLateMinutes: 120,
-  monthlyOvertimeMinutes: 600,
-  monthlyTotalMinutes: 168 * 60,
-  weeklyLateMinutes: 40,
-  weeklyOvertimeMinutes: 180,
-  weeklyTotalMinutes: 40 * 60,
-};
-
-/** daisyUI 톤과 어울리는 단색 팔레트(출근/지각/결근/휴일) */
-const COLORS = ["#1f2937", "#9CA3AF", "#D1D5DB", "#FECACA"];
-
-export default function UserMonthlySummary() {
-  // 화면 상태
-  const [monthly, setMonthly] = useState<MonthlySummary>(MOCK_MONTHLY);
-  const [times, setTimes] = useState<WorkTimeSummary>(MOCK_TIMES);
-  const [totals, setTotals] = useState<Totals>(MOCK_TOTALS);
-  const [useApi, setUseApi] = useState(false); // 처음엔 가짜데이터로
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<string>("");
 
-  /** 도넛 그래프 데이터 */
-  const pieData = useMemo(
-    () => [
-      { name: "출근", value: monthly.workDays },
-      { name: "지각", value: monthly.lateDays },
-      { name: "결근", value: monthly.absenceDays },
-      { name: "휴일", value: monthly.holidays },
-    ],
-    [monthly]
-  );
+  const [monthly, setMonthly] = useState<MonthlyApi | null>(null);
+  const [rangeMonth, setRangeMonth] = useState<RangeApi | null>(null);
+  const [rangeWeek, setRangeWeek] = useState<RangeApi | null>(null);
 
-  /** 막대 그래프(퍼센트) */
-  const totalMinutes =
-    times.baseMinutes +
-      times.overtimeMinutes +
-      times.holidayMinutes +
-      times.nightMinutes || 1;
-
-  const barData = [
-    { name: "소정 근로 시간", pct: Math.round((times.baseMinutes / totalMinutes) * 100) },
-    { name: "잔업 시간", pct: Math.round((times.overtimeMinutes / totalMinutes) * 100) },
-    { name: "휴일 근로 시간", pct: Math.round((times.holidayMinutes / totalMinutes) * 100) },
-    { name: "야간 근로 시간", pct: Math.round((times.nightMinutes / totalMinutes) * 100) },
-  ];
-
-  /** -----------------------------
-   *  ④ API 연결 (토글 켤 때만 요청)
-   *  - 기본 주소는 .env 파일 또는 3980 포트
-   *  - 토큰 있으면 Authorization 헤더로 전송
-   * ----------------------------- */
+  // ── API 불러오기
   useEffect(() => {
-    if (!useApi) return;
-
-    const fetchAll = async () => {
+    let stop = false;
+    (async () => {
+      setLoading(true);
+      setErr("");
       try {
-        setLoading(true);
-        setErr(null);
+        const token = localStorage.getItem("token") || "";
+        const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const baseURL =
-          // Vite 환경변수 → CRA 환경변수 → 기본값
-          (import.meta as any)?.env?.VITE_API_BASE ||
-          (process.env as any)?.REACT_APP_API_BASE ||
-          "http://localhost:3980";
+        const mUrl = `${API_BASE}/attendance/summary/monthly?year=${today.year()}&month=${today.month() + 1}`;
+        const rMonthUrl = `${API_BASE}/attendance/summary?from=${monthStartStr}&to=${monthEndStr}`;
+        const rWeekUrl = `${API_BASE}/attendance/summary?from=${weekStartStr}&to=${weekEndStr}`;
 
-        const headers: Record<string, string> = {};
-        const token = localStorage.getItem("token");
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
-        const [mRes, sRes, tRes] = await Promise.all([
-          axios.get(`${baseURL}/attendance/summary/monthly`, { headers }),
-          axios.get(`${baseURL}/attendance/summary`, { headers }),
-          axios.get(`${baseURL}/attendance/today`, { headers }),
+        const [mRes, rmRes, rwRes] = await Promise.all([
+          fetch(mUrl, { headers }),
+          fetch(rMonthUrl, { headers }),
+          fetch(rWeekUrl, { headers }),
         ]);
 
-        // ⚠️ 실제 응답 키 이름에 맞게 아래만 조정하면 됨
-        const m = mRes.data || {};
-        setMonthly({
-          month: m.month ?? dayjs().format("YYYY-MM"),
-          workDays: m.workDays ?? m.present ?? 0,
-          lateDays: m.lateDays ?? 0,
-          absenceDays: m.absenceDays ?? 0,
-          holidays: m.holidays ?? m.holidayDays ?? 0,
-          attendanceRate: m.attendanceRate ?? 0,
-        });
+        if (!mRes.ok) throw new Error(`월 통계 실패(${mRes.status})`);
+        if (!rmRes.ok) throw new Error(`월 범위 실패(${rmRes.status})`);
+        if (!rwRes.ok) throw new Error(`주간 범위 실패(${rwRes.status})`);
 
-        const s = sRes.data || {};
-        setTimes({
-          baseMinutes: s.baseMinutes ?? 0,
-          overtimeMinutes: s.overtimeMinutes ?? 0,
-          holidayMinutes: s.holidayMinutes ?? 0,
-          nightMinutes: s.nightMinutes ?? 0,
-        });
+        const mJson = (await mRes.json()) as MonthlyApi;
+        const rmJson = (await rmRes.json()) as RangeApi;
+        const rwJson = (await rwRes.json()) as RangeApi;
 
-        const t = tRes.data || {};
-        setTotals({
-          monthlyLateMinutes: t.monthlyLateMinutes ?? 0,
-          monthlyOvertimeMinutes: t.monthlyOvertimeMinutes ?? 0,
-          monthlyTotalMinutes: t.monthlyTotalMinutes ?? 0,
-          weeklyLateMinutes: t.weeklyLateMinutes ?? 0,
-          weeklyOvertimeMinutes: t.weeklyOvertimeMinutes ?? 0,
-          weeklyTotalMinutes: t.weeklyTotalMinutes ?? 0,
-        });
+        if (!stop) {
+          setMonthly(mJson);
+          setRangeMonth(rmJson);
+          setRangeWeek(rwJson);
+        }
       } catch (e: any) {
-        setErr(e?.response?.data?.message || e.message || "API 오류");
+        if (!stop) setErr(e?.message || "불러오기 실패");
       } finally {
-        setLoading(false);
+        if (!stop) setLoading(false);
       }
+    })();
+    return () => {
+      stop = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    fetchAll();
-  }, [useApi]);
+  // ── 월간 계산(출근/지각/결근/휴일, 근로시간 비율, 하단 월간 카드)
+  const monthCalc = useMemo(() => {
+    let presentDays = 0;     // 출근(지각 포함)
+    let absentDays = 0;      // 결근
+    let lateDays = 0;        // 지각 '일수'
+    let lateMinutes = 0;     // 지각 '총 분'
+    let total = 0;           // 총 근무 분
+    let over = 0;            // 잔업 분
+    let base = 0;            // 소정근로 = 총 - 잔업
+    // (보유 데이터에 없어서) 휴일/야간 분은 0으로 두고 UI만 구성
+    let holidayMinutes = 0;
+    let nightMinutes = 0;
 
+    if (rangeMonth) {
+      total = Math.max(rangeMonth.workTimes || 0, 0);
+      over = Math.max(rangeMonth.overTimes || 0, 0);
+      base = Math.max(total - over, 0);
+      presentDays = rangeMonth.workDays ?? rangeMonth.historyList?.length ?? 0;
+      absentDays = rangeMonth.absenceDays ?? 0;
+
+      const std = DEFAULT_WORK_START;
+      rangeMonth.historyList?.forEach((h) => {
+        if (h.clock_in) {
+          const inTime = dayjs(h.clock_in);
+          const standard = dayjs(`${h.workdate}T${std}:00`);
+          if (inTime.isAfter(standard)) {
+            lateDays += 1;
+            lateMinutes += Math.max(inTime.diff(standard, "minute"), 0);
+          }
+        }
+      });
+    }
+
+    if (monthly) {
+      // 월간 요약 API에서 보강
+      if (!presentDays && typeof monthly.totalDaysWorked === "number")
+        presentDays = monthly.totalDaysWorked;
+      if (!absentDays && typeof monthly.missedDays === "number")
+        absentDays = monthly.missedDays;
+    }
+
+    const normalDays = Math.max(presentDays - lateDays, 0);
+    const holidayDays = 0; // 휴일근로 일수(없으면 0)
+
+    const totalDays = normalDays + lateDays + absentDays + holidayDays;
+    const attendanceRate =
+      totalDays > 0 ? Math.round(((normalDays + lateDays) / totalDays) * 100) : 0;
+
+    return {
+      // 도넛
+      normalDays,
+      lateDays,
+      absentDays,
+      holidayDays,
+      attendanceRate,
+      // 막대
+      totalMinutes: total,
+      baseMinutes: base,
+      overMinutes: over,
+      holidayMinutes,
+      nightMinutes,
+      // 하단 카드용
+      monthLateMinutes: lateMinutes,
+      monthTotalMinutes: total,
+      monthOverMinutes: over,
+    };
+  }, [monthly, rangeMonth]);
+
+  // ── 주간(하단 카드)
+  const weekCalc = useMemo(() => {
+    let wOver = 0;
+    let wTotal = 0;
+    let wLateMin = 0;
+
+    if (rangeWeek) {
+      const std = DEFAULT_WORK_START;
+      rangeWeek.historyList?.forEach((h) => {
+        wOver += Math.max(h.overtimeMinute || 0, 0);
+        wTotal += Math.max(h.workMinute || 0, 0);
+        if (h.clock_in) {
+          const inTime = dayjs(h.clock_in);
+          const standard = dayjs(`${h.workdate}T${std}:00`);
+          if (inTime.isAfter(standard)) {
+            wLateMin += Math.max(inTime.diff(standard, "minute"), 0);
+          }
+        }
+      });
+    }
+    return {
+      weeklyOverMinutes: wOver,
+      weeklyTotalMinutes: wTotal,
+      weeklyLateMinutes: wLateMin,
+    };
+  }, [rangeWeek]);
+
+  // ── 도넛 데이터
+  const donutData = [
+    { name: "출근", value: monthCalc.normalDays, color: COLORS.donutAttend },
+    { name: "지각", value: monthCalc.lateDays, color: COLORS.donutLate },
+    { name: "결근", value: monthCalc.absentDays, color: COLORS.donutAbsent },
+    { name: "휴일", value: monthCalc.holidayDays, color: COLORS.donutHoliday },
+  ];
+
+  // ── 가운데 수평 바(각 항목을 전체 근로 대비 퍼센트로)
+  const basePct = pct(monthCalc.baseMinutes, monthCalc.totalMinutes);
+  const overPct = pct(monthCalc.overMinutes, monthCalc.totalMinutes);
+  const holidayPct = pct(monthCalc.holidayMinutes, monthCalc.totalMinutes);
+  const nightPct = pct(monthCalc.nightMinutes, monthCalc.totalMinutes);
+
+  // ── 렌더
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* 상단: 제목 + 토글 */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">월간 근로 분석</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm">가짜데이터</span>
-          <input
-            type="checkbox"
-            className="toggle"
-            checked={useApi}
-            onChange={(e) => setUseApi(e.target.checked)}
-          />
-          <span className="text-sm">API 연결</span>
+    <div className="p-6">
+      {/* 상단 카드 */}
+      <div className="rounded-2xl border shadow-sm p-5">
+        <div className="text-sm text-gray-600 mb-2">
+          {today.format("YYYY년 MM월")} 근무 현황
         </div>
-      </div>
 
-      {/* 1) 원형(도넛) 차트 + 범례 + 출근율 */}
-      <div className="card bg-base-100 shadow-md rounded-2xl">
-        <div className="card-body">
-          <p className="font-semibold">{dayjs().format("YYYY년 MM월")} 근무 현황</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            {/* 차트 */}
-            <div className="h-64">
+        <div className="grid grid-cols-12 gap-6">
+          {/* 왼쪽 범례/텍스트 */}
+          <div className="col-span-12 lg:col-span-5 flex flex-col justify-center">
+            <div className="space-y-3">
+              {[
+                { label: "출근", color: COLORS.donutAttend, val: monthCalc.normalDays },
+                { label: "지각", color: COLORS.donutLate, val: monthCalc.lateDays },
+                { label: "결근", color: COLORS.donutAbsent, val: monthCalc.absentDays },
+                { label: "휴일", color: COLORS.donutHoliday, val: monthCalc.holidayDays },
+              ].map((i) => (
+                <div key={i.label} className="flex items-center gap-3 text-sm">
+                  <span
+                    className="inline-block h-3 w-3 rounded"
+                    style={{ backgroundColor: i.color }}
+                  />
+                  <span className="text-gray-700">{i.label}</span>
+                  <span className="text-gray-500 ml-1">: {i.val} 일</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 오른쪽 도넛 */}
+          <div className="col-span-12 lg:col-span-7">
+            <div className="w-full h-64">
               <ResponsiveContainer>
                 <PieChart>
+                  <PieTooltip
+                    content={({ active, payload }) => {
+                      if (!active || !payload || !payload.length) return null;
+                      const p = payload[0];
+                      return (
+                        <div className="bg-white border rounded px-2 py-1 text-xs shadow">
+                          {p.name}: {p.value}일
+                        </div>
+                      );
+                    }}
+                  />
                   <Pie
-                    data={pieData}
-                    innerRadius={"55%"}
-                    outerRadius={"90%"}
-                    dataKey="value"
+                    data={donutData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
                     paddingAngle={2}
+                    dataKey="value"
+                    nameKey="name"
                   >
-                    {pieData.map((_, idx) => (
-                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                    {donutData.map((d, idx) => (
+                      <Cell key={idx} fill={d.color} />
                     ))}
                   </Pie>
+
+                  {/* 중앙 라벨 */}
+                  <foreignObject
+                    x="38%"
+                    y="40%"
+                    width="120"
+                    height="60"
+                    pointerEvents="none"
+                  >
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-xs text-gray-500">출근율</div>
+                      <div className="text-2xl font-bold">
+                        {monthCalc.attendanceRate}%
+                      </div>
+                      <div className="text-[10px] text-gray-400">
+                        {today.format("YYYY-MM")}
+                      </div>
+                    </div>
+                  </foreignObject>
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            {/* 출근율 카드 + 범례 */}
-            <div className="space-y-4">
-              <div className="stat bg-base-200 rounded-2xl">
-                <div className="stat-title">출근율</div>
-                <div className="stat-value">{monthly.attendanceRate}%</div>
-                <div className="stat-desc">{monthly.month}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2"><span className="badge" style={{background:COLORS[0]}}></span>출근: {monthly.workDays}일</div>
-                <div className="flex items-center gap-2"><span className="badge" style={{background:COLORS[1]}}></span>지각: {monthly.lateDays}일</div>
-                <div className="flex items-center gap-2"><span className="badge" style={{background:COLORS[2]}}></span>결근: {monthly.absenceDays}일</div>
-                <div className="flex items-center gap-2"><span className="badge" style={{background:COLORS[3]}}></span>휴일: {monthly.holidays}일</div>
-              </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 가운데: 수평 퍼센트 바 4줄 */}
+      <div className="rounded-2xl border shadow-sm p-5 mt-6">
+        {[
+          { label: "소정 근로 시간", color: COLORS.barBase, value: basePct },
+          { label: "잔업 시간", color: COLORS.barOver, value: overPct },
+          { label: "휴일 근로 시간", color: COLORS.barHoliday, value: holidayPct },
+          { label: "야간 근로 시간", color: COLORS.barNight, value: nightPct },
+        ].map((row) => (
+          <div
+            key={row.label}
+            className="flex items-center gap-3 mb-3 last:mb-0"
+          >
+            <div className="shrink-0 w-28 text-xs text-gray-600">
+              {row.label}
+            </div>
+            <div className="flex-1 h-5 rounded bg-gray-200 overflow-hidden">
+              <div
+                className="h-full rounded"
+                style={{
+                  width: `${Math.min(row.value, 100)}%`,
+                  backgroundColor: row.color,
+                  transition: "width .5s",
+                }}
+              />
+            </div>
+            <div className="shrink-0 w-12 text-right text-xs text-gray-600">
+              {row.value}%
             </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* 2) 근로 시간 구성 비율(막대) */}
-      <div className="card bg-base-100 shadow-md rounded-2xl">
-        <div className="card-body">
-          <p className="font-semibold">근로 시간 구성 비율</p>
-          <div className="h-60">
-            <ResponsiveContainer>
-              <BarChart data={barData} layout="vertical" margin={{ left: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                <YAxis type="category" dataKey="name" width={120} />
-                <Tooltip formatter={(v: any) => `${v}%`} />
-                <Bar dataKey="pct" />
-              </BarChart>
-            </ResponsiveContainer>
+      {/* 하단 카드 6개 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        {/* 월간 지각 */}
+        <div className="rounded-2xl border shadow-sm p-4">
+          <div className="text-sm text-gray-600 mb-3">월간 지각</div>
+          <div className="h-10 rounded bg-gray-100 flex items-center px-4 text-sm text-gray-700">
+            {mmToHHmm(monthCalc.monthLateMinutes)}
           </div>
         </div>
-      </div>
 
-      {/* 3) 하단 타일(월/주 합계) */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Tile title="월간 지각" value={mmToHHmm(totals.monthlyLateMinutes)} />
-        <Tile title="월간 잔업" value={mmToHHmm(totals.monthlyOvertimeMinutes)} />
-        <Tile title="월간 근무 총 시간" value={mmToHHmm(totals.monthlyTotalMinutes)} />
-        <Tile title="주간 지각" value={mmToHHmm(totals.weeklyLateMinutes)} />
-        <Tile title="주간 잔업" value={mmToHHmm(totals.weeklyOvertimeMinutes)} />
-        <Tile title="주간 근무 총 시간" value={mmToHHmm(totals.weeklyTotalMinutes)} />
+        {/* 월간 잔업 */}
+        <div className="rounded-2xl border shadow-sm p-4">
+          <div className="text-sm text-gray-600 mb-3">월간 잔업</div>
+          <div className="h-10 rounded bg-gray-100 flex items-center px-4 text-sm text-gray-700">
+            {mmToHHmm(monthCalc.monthOverMinutes)}
+          </div>
+        </div>
+
+        {/* 월간 근무 총 시간 */}
+        <div className="rounded-2xl border shadow-sm p-4">
+          <div className="text-sm text-gray-600 mb-3">월간 근무 총 시간</div>
+          <div className="h-10 rounded bg-gray-100 flex items-center px-4 text-sm text-gray-700">
+            {mmToHHmm(monthCalc.monthTotalMinutes)}
+          </div>
+        </div>
+
+        {/* 주간 지각 */}
+        <div className="rounded-2xl border shadow-sm p-4">
+          <div className="text-sm text-gray-600 mb-3">주간 지각</div>
+          <div className="h-10 rounded bg-gray-100 flex items-center px-4 text-sm text-gray-700">
+            {mmToHHmm(weekCalc.weeklyLateMinutes)}
+          </div>
+        </div>
+
+        {/* 주간 잔업 */}
+        <div className="rounded-2xl border shadow-sm p-4">
+          <div className="text-sm text-gray-600 mb-3">주간 잔업</div>
+          <div className="h-10 rounded bg-gray-100 flex items-center px-4 text-sm text-gray-700">
+            {mmToHHmm(weekCalc.weeklyOverMinutes)}
+          </div>
+        </div>
+
+        {/* 주간 근무 총 시간 */}
+        <div className="rounded-2xl border shadow-sm p-4">
+          <div className="text-sm text-gray-600 mb-3">주간 근무 총 시간</div>
+          <div className="h-10 rounded bg-gray-100 flex items-center px-4 text-sm text-gray-700">
+            {mmToHHmm(weekCalc.weeklyTotalMinutes)}
+          </div>
+        </div>
       </div>
 
       {/* 상태 표시 */}
-      {loading && <div className="alert alert-info">불러오는 중…</div>}
-      {err && <div className="alert alert-error">에러: {err}</div>}
+      {loading && (
+        <div className="mt-6 text-sm text-gray-500">불러오는 중…</div>
+      )}
+      {!!err && (
+        <div className="mt-6 text-sm text-red-600">
+          에러: {err}
+        </div>
+      )}
     </div>
   );
-}
+};
 
-/** 작은 타일 컴포넌트 */
-function Tile({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="card bg-base-100 shadow-md rounded-2xl">
-      <div className="card-body p-4">
-        <p className="text-sm opacity-70">{title}</p>
-        <p className="text-xl font-semibold text-right">{value}</p>
-      </div>
-    </div>
-  );
-}
+export default UserMonthlySummary;
