@@ -18,6 +18,7 @@ import UserHomePage from './pages/userpages/UserHomePage';
 import UserWeeklySummary from './pages/userpages/UserWeeklySummary';
 import UserAttendanceHistory from './pages/userpages/UserAttendanceHistory';
 import UserMonthlySummary from './pages/userpages/UserMonthlySummary';
+import WeeklyAttendStatus from './pages/WeeklyAttendStatus';
 
 function App() {
   return (
@@ -198,7 +199,16 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+            {/* 주간 근태 현황 */}
+          <Route
+            path="weekly-attendance"
+            element={
+              <ProtectedRoute requiredRole="USER">
+                <WeeklyAttendStatus />
+              </ProtectedRoute>
+            }
+          />
+         
         </Route>
 
       </Routes>
