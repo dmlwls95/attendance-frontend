@@ -48,11 +48,19 @@ const formatDateToJapanese = (dateStr: string) => {
 
 const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
   return (
-    <div style={{ marginBottom: 40, border: '1px solid #ccc', borderRadius: 8, padding: 20 }}>
+    <div
+      style={{
+        marginBottom: 40,
+        border: '1px solid #ccc',
+        borderRadius: 8,
+        padding: 20,
+        boxSizing: 'border-box',
+        minHeight: 320,
+      }}
+    >
       <h3 style={{ marginBottom: 10, fontWeight: 'bold' }}>週間勤務時間合計</h3>
 
-      {/* 日付の位置を上部中央に変更、日本式 */}
-      <div style={{ textAlign: 'center', marginBottom: 10, fontSize: 14, fontWeight: 'bold' }}>
+      <div style={{ textAlign: 'center', marginBottom: 10, fontWeight: 'bold', fontSize: 14 }}>
         【 {formatDateToJapanese(startDate)} ～ {formatDateToJapanese(endDate)} 】
       </div>
 
@@ -60,10 +68,7 @@ const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
         {/* 棒グラフ */}
         <div style={{ width: '70%', height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={barData}
-              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-            >
+            <BarChart data={barData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
@@ -79,7 +84,6 @@ const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
         <div style={{ width: 200, height: 200, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              {/* 外側ドーナツ：残業時間分は紫、残りは透明 */}
               <Pie
                 data={overtimeData}
                 cx="50%"
@@ -98,7 +102,6 @@ const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
                 ))}
               </Pie>
 
-              {/* 内側ドーナツ：勤務時間と残り時間 */}
               <Pie
                 data={workAndRemainData}
                 cx="50%"
@@ -119,19 +122,20 @@ const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
             </PieChart>
           </ResponsiveContainer>
 
+          {/* 텍스트 박스: 여기가 핵심! */}
           <div
             style={{
-              fontSize: 12,
-              marginTop: 10,
-              width: '200px',
-              maxHeight: '70px',
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              wordBreak: 'break-word',
-              whiteSpace: 'normal',
-              paddingRight: 8,
-              boxSizing: 'border-box',
-              flexShrink: 0,
+             fontSize: 12,
+             marginTop: 10,
+             width: 200,
+             maxHeight: 70,
+             overflowY: 'auto',
+             paddingRight: 8,
+             boxSizing: 'border-box',
+             wordBreak: 'break-all',
+             overflowWrap: 'break-word',
+             whiteSpace: 'normal',
+             overflowX: 'hidden',
             }}
           >
             <div>
