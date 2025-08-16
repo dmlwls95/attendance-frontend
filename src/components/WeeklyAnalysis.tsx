@@ -1,5 +1,5 @@
 import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell 
 } from 'recharts';
 
@@ -46,6 +46,26 @@ const formatDateToJapanese = (dateStr: string) => {
   return `${year}年${month}月${day}日`;
 };
 
+// 커스텀 범례 컴포넌트
+const CustomLegend = () => (
+  <div
+    style={{
+      position: 'absolute',
+      left: '30%',     // 화요일과 수요일 사이쯤 위치 (필요시 조절)
+      bottom: 10,     // 막대그래프 아래 위치
+      display: 'flex',
+      gap: 20,
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#eee',
+    }}
+  >
+    <span style={{ color: COLORS.勤務時間 }}>■ 勤務時間</span>
+    <span style={{ color: COLORS.残り時間 }}>■ 残り時間</span>
+    <span style={{ color: COLORS.残業時間 }}>■ 残業時間</span>
+  </div>
+);
+
 const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
   return (
     <div
@@ -65,22 +85,25 @@ const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {/* 棒グラフ */}
-        <div style={{ width: '70%', height: 200 }}>
+        {/* 막대그래프 */}
+        <div style={{ width: '70%', height: 200, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <BarChart data={barData} margin={{ top: 20, right: 20, bottom: 50, left: 20 }}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Legend />
+              {/* 기존 Legend 제거 */}
               <Bar dataKey="勤務時間" stackId="a" fill={COLORS.勤務時間} />
-              <Bar dataKey="残業時間" stackId="a" fill={COLORS.残業時間} />
-              <Bar dataKey="残り時間" stackId="a" fill={COLORS.残り時間} />
+<Bar dataKey="残業時間" stackId="a" fill={COLORS.残業時間} />
+<Bar dataKey="残り時間" stackId="a" fill={COLORS.残り時間} />
             </BarChart>
           </ResponsiveContainer>
+
+          {/* 커스텀 범례 */}
+          <CustomLegend />
         </div>
 
-        {/* ドーナツチャート */}
+        {/* 도넛차트 */}
         <div style={{ width: 200, height: 200, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -122,20 +145,19 @@ const WeeklyAnalysis = ({ startDate, endDate }: WeeklyAnalysisProps) => {
             </PieChart>
           </ResponsiveContainer>
 
-          {/* 텍스트 박스: 여기가 핵심! */}
+          {/* 텍스트 박스 */}
           <div
             style={{
-             fontSize: 12,
-             marginTop: 10,
-             width: 200,
-             maxHeight: 70,
-             overflowY: 'auto',
-             paddingRight: 8,
-             boxSizing: 'border-box',
-             wordBreak: 'break-all',
-             overflowWrap: 'break-word',
-             whiteSpace: 'normal',
-             overflowX: 'hidden',
+              fontSize: 12,
+              marginTop: -40,
+              width: 200,
+              maxHeight: 'none',
+              overflow: 'visible',
+              paddingRight: 8,
+              boxSizing: 'border-box',
+              wordBreak: 'break-all',
+              overflowWrap: 'break-word',
+              whiteSpace: 'normal',
             }}
           >
             <div>
