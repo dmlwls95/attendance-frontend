@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
 
 dayjs.locale("ko");
 
@@ -17,12 +17,11 @@ const COLORS = {
     base:    "#E5E9F0",
     std:     "#2DD4BF", // 소정 근로 시간 (민트)
     overtime:"#99A1EE", // 잔업 시간 (라벤더블루)
-    holiday: "#FFB7AE", // 휴일 근로 시간 (연분홍)  // 공휴일 미반영(임시)
+    holiday: "#FFB7AE", // 휴일 근로 시간 (연분홍)
     night:   "#374151", // 야간 근로 시간 (진회색)
   },
 };
 
-// 아이콘(없으면 fallback)
 const ICON_SRC = "/icon-monthly.svg";
 
 /* 유틸 */
@@ -43,42 +42,50 @@ type MonthlyDashboardResponse = {
   holidayDays: number;
   normalMinutes: number;
   overtimeMinutes: number;
-  holidayMinutes: number; // 토/일 근무분(공휴일 미포함)
-  nightMinutes: number;   // 22~05 근무분
+  holidayMinutes: number;
+  nightMinutes: number;
   workableDays: number;
+  lateMinutes: number;
+  totalMinutes: number; // normal+overtime+holiday
 };
-type AttendanceHistoryResponse = {
-  workDays: number;
-  workTimes: number; // 분
-  overTimes: number; // 분
-  absenceDays: number;
+type WeeklyKpiResponse = {
+  lateMinutes: number;
+  overMinutes: number;
+  totalMinutes: number;
 };
 
-/* 안전한 JSON fetch (로그인 만료/권한 문제 시 HTML 반환 대비) */
+/* HTML 반환(로그인 만료/권한 문제) 대비 안전 fetch */
 async function fetchJSON<T>(url: string): Promise<T> {
   const res = await fetch(url, { credentials: "include" });
-  const ct = res.headers.get("content-type") || "";
+  const textCt = res.headers.get("content-type") || "";
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`요청 실패(${res.status}) • ${text.slice(0, 120)}`);
+    const body = await res.text().catch(() => "");
+    throw new Error(`요청 실패(${res.status}) • ${body.slice(0, 140)}`);
   }
-  if (!ct.includes("application/json")) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `JSON 아님(로그인 만료/권한 문제 가능) • 응답 앞부분: ${text.slice(0, 120)}`
-    );
+  if (!textCt.includes("application/json")) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`JSON 아님(로그인 만료/권한 문제 가능) • 응답 앞부분: ${body.slice(0, 140)}`);
   }
   return res.json();
 }
 
+/* ───────────────────────────────────────────────────────────── */
 const UserMonthlySummary: React.FC = () => {
-  const year = dayjs().year();
-  const month = dayjs().month() + 1;
+  const now = dayjs();
+  const year = now.year();
+  const month = now.month() + 1;
+
+  // 월(1일~오늘), 주(월~오늘) 범위 계산
+  const monthFrom = now.startOf("month").format("YYYY-MM-DD");
+  const monthTo   = now.format("YYYY-MM-DD");
+  const weekStart = now.startOf("week").add(1, "day"); // 월요일
+  const weekFrom  = weekStart.format("YYYY-MM-DD");
+  const weekTo    = now.format("YYYY-MM-DD");
 
   const [monthly, setMonthly] = useState<MonthlyDashboardResponse | null>(null);
-  const [weekly, setWeekly]   = useState<AttendanceHistoryResponse | null>(null);
-  const [error, setError]     = useState<string | null>(null);
-  const [iconOk, setIconOk]   = useState(true);
+  const [weekly,  setWeekly]  = useState<WeeklyKpiResponse | null>(null);
+  const [error,   setError]   = useState<string | null>(null);
+  const [iconOk,  setIconOk]  = useState(true);
 
   useEffect(() => {
     let ignore = false;
@@ -86,29 +93,25 @@ const UserMonthlySummary: React.FC = () => {
       try {
         setError(null);
 
-        // 월간
+        // 월간 대시보드(백엔드: /attendance/dashboard/monthly)
         const m = await fetchJSON<MonthlyDashboardResponse>(
           `/attendance/dashboard/monthly?year=${year}&month=${month}`
         );
         if (!ignore) setMonthly(m);
 
-        // 주간 (이번 주 월~일)
-        const startOfWeek = dayjs().startOf("week").add(1, "day"); // 월요일
-        const endOfWeek   = startOfWeek.add(6, "day");
-        const from = startOfWeek.format("YYYY-MM-DD");
-        const to   = endOfWeek.format("YYYY-MM-DD");
-
-        const w = await fetchJSON<AttendanceHistoryResponse>(
-          `/attendance/summary?from=${from}&to=${to}`
+        // 주간 KPI(월~오늘) (백엔드: /attendance/kpi)
+        const w = await fetchJSON<WeeklyKpiResponse>(
+          `/attendance/kpi?from=${weekFrom}&to=${weekTo}`
         );
         if (!ignore) setWeekly(w);
       } catch (e: any) {
-        setError(`데이터를 불러오지 못했습니다. ${e?.message ?? ""}`);
+        if (!ignore) setError(`데이터를 불러오지 못했습니다. ${e?.message ?? ""}`);
       }
     })();
     return () => { ignore = true; };
-  }, [year, month]);
+  }, [year, month, weekFrom, weekTo]);
 
+  // ── 도넛 데이터
   const donutData = useMemo(() => {
     const p = monthly?.presentDays ?? 0;
     const l = monthly?.lateDays ?? 0;
@@ -127,11 +130,15 @@ const UserMonthlySummary: React.FC = () => {
     ? Math.round(((monthly?.presentDays ?? 0) / totalDays) * 100)
     : 0;
 
+  // ── 막대 합계/값
   const normalMin   = monthly?.normalMinutes   ?? 0;
   const overtimeMin = monthly?.overtimeMinutes ?? 0;
-  const holidayMin  = monthly?.holidayMinutes  ?? 0; // 토/일 근무 (공휴일 미반영, 임시)
-  const nightMin    = monthly?.nightMinutes    ?? 0; // 22~05 근무
+  const holidayMin  = monthly?.holidayMinutes  ?? 0;
+  const nightMin    = monthly?.nightMinutes    ?? 0;
   const barTotal    = normalMin + overtimeMin + holidayMin + nightMin;
+
+  // 툴팁용 포맷터
+  const donutTooltip = (v: any) => `${v}일 (${pct(v, totalDays)}%)`;
 
   return (
     <div className="p-6">
@@ -153,7 +160,7 @@ const UserMonthlySummary: React.FC = () => {
       {/* ───── 상단: 도넛 + 라벨 (가로 가운데, 간격 좁게) ───── */}
       <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
         <div className="text-sm text-gray-500 mb-2">
-          {year}년 {String(month).padStart(2, "0")}월 근무 현황
+          {year}년 {String(month).padStart(2, "0")}월 근무 현황 (집계: {monthFrom} ~ {monthTo})
         </div>
 
         <div className="w-full flex items-center justify-center gap-4">
@@ -172,6 +179,10 @@ const UserMonthlySummary: React.FC = () => {
           <div className="relative w-[260px] h-[180px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
+                <ReTooltip
+                  formatter={(v: any) => [donutTooltip(v as number), ""]}
+                  contentStyle={{ borderRadius: 12, borderColor: "#e5e7eb" }}
+                />
                 <Pie
                   data={donutData}
                   dataKey="value"
@@ -200,8 +211,8 @@ const UserMonthlySummary: React.FC = () => {
         {[
           { label: "소정 근로 시간", value: normalMin,  color: COLORS.bars.std },
           { label: "잔업 시간",     value: overtimeMin, color: COLORS.bars.overtime },
-          { label: "휴일 근로 시간", value: holidayMin,  color: COLORS.bars.holiday }, // (토/일, 공휴일 미반영)
-          { label: "야간 근로 시간", value: nightMin,    color: COLORS.bars.night   }, // (22:00~05:00)
+          { label: "휴일 근로 시간", value: holidayMin,  color: COLORS.bars.holiday },
+          { label: "야간 근로 시간", value: nightMin,    color: COLORS.bars.night },
         ].map((row) => (
           <div key={row.label} className="mb-3">
             <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
@@ -221,19 +232,20 @@ const UserMonthlySummary: React.FC = () => {
 
       {/* ───── 하단 카드: 월/주 지표 (6개) ───── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* 월간 지각(‘시간’ 집계는 아직 없음) */}
+        {/* 월간 지각(분→시:분) */}
         <div className="bg-white rounded-xl shadow-sm border p-4">
           <div className="text-sm text-gray-600 mb-2">월간 지각</div>
           <div className="w-full h-8 bg-gray-200 rounded-md flex items-center px-3">
-            <span className="text-gray-800 text-sm">00시간 00분</span>
+            <span className="text-gray-800 text-sm">{mmToHHMM(monthly?.lateMinutes)}</span>
           </div>
+          <div className="mt-1 text-[11px] text-gray-400">지각 {monthly?.lateDays ?? 0}일</div>
         </div>
 
         {/* 월간 잔업 */}
         <div className="bg-white rounded-xl shadow-sm border p-4">
           <div className="text-sm text-gray-600 mb-2">월간 잔업</div>
           <div className="w-full h-8 bg-gray-200 rounded-md flex items-center px-3">
-            <span className="text-gray-800 text-sm">{mmToHHMM(overtimeMin)}</span>
+            <span className="text-gray-800 text-sm">{mmToHHMM(monthly?.overtimeMinutes)}</span>
           </div>
         </div>
 
@@ -242,24 +254,25 @@ const UserMonthlySummary: React.FC = () => {
           <div className="text-sm text-gray-600 mb-2">월간 근무 총 시간</div>
           <div className="w-full h-8 bg-gray-200 rounded-md flex items-center px-3">
             <span className="text-gray-800 text-sm">
-              {mmToHHMM(normalMin + overtimeMin + holidayMin + nightMin)}
+              {mmToHHMM(monthly?.totalMinutes)}
             </span>
           </div>
         </div>
 
-        {/* 주간 지각(집계 없음) */}
+        {/* 주간 지각 */}
         <div className="bg-white rounded-xl shadow-sm border p-4">
           <div className="text-sm text-gray-600 mb-2">주간 지각</div>
           <div className="w-full h-8 bg-gray-200 rounded-md flex items-center px-3">
-            <span className="text-gray-800 text-sm">00시간 00분</span>
+            <span className="text-gray-800 text-sm">{mmToHHMM(weekly?.lateMinutes)}</span>
           </div>
+          <div className="mt-1 text-[11px] text-gray-400">집계: {weekFrom} ~ {weekTo}</div>
         </div>
 
         {/* 주간 잔업 */}
         <div className="bg-white rounded-xl shadow-sm border p-4">
           <div className="text-sm text-gray-600 mb-2">주간 잔업</div>
           <div className="w-full h-8 bg-gray-200 rounded-md flex items-center px-3">
-            <span className="text-gray-800 text-sm">{mmToHHMM(weekly?.overTimes ?? 0)}</span>
+            <span className="text-gray-800 text-sm">{mmToHHMM(weekly?.overMinutes)}</span>
           </div>
         </div>
 
@@ -267,7 +280,7 @@ const UserMonthlySummary: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border p-4">
           <div className="text-sm text-gray-600 mb-2">주간 근무 총 시간</div>
           <div className="w-full h-8 bg-gray-200 rounded-md flex items-center px-3">
-            <span className="text-gray-800 text-sm">{mmToHHMM(weekly?.workTimes ?? 0)}</span>
+            <span className="text-gray-800 text-sm">{mmToHHMM(weekly?.totalMinutes)}</span>
           </div>
         </div>
       </div>
