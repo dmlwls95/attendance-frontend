@@ -118,10 +118,10 @@ const UserMonthlySummary: React.FC = () => {
     const a = monthly?.absentDays ?? 0;
     const h = monthly?.holidayDays ?? 0;
     return [
-      { name: "출근", value: p, color: COLORS.donut.work },
-      { name: "지각", value: l, color: COLORS.donut.late },
-      { name: "결근", value: a, color: COLORS.donut.absent },
-      { name: "휴일", value: h, color: COLORS.donut.holiday },
+      { name: "출근", value: p, color: COLORS.donut.work,    unit: "일" },
+      { name: "지각", value: l, color: COLORS.donut.late,    unit: "일" },
+      { name: "결근", value: a, color: COLORS.donut.absent,  unit: "일" },
+      { name: "휴일", value: h, color: COLORS.donut.holiday, unit: "일" },
     ];
   }, [monthly]);
 
@@ -136,9 +136,6 @@ const UserMonthlySummary: React.FC = () => {
   const holidayMin  = monthly?.holidayMinutes  ?? 0;
   const nightMin    = monthly?.nightMinutes    ?? 0;
   const barTotal    = normalMin + overtimeMin + holidayMin + nightMin;
-
-  // 툴팁용 포맷터
-  const donutTooltip = (v: any) => `${v}일 (${pct(v, totalDays)}%)`;
 
   return (
     <div className="p-6">
@@ -157,32 +154,27 @@ const UserMonthlySummary: React.FC = () => {
         <h2 className="text-xl font-semibold">월간 근로 분석</h2>
       </div>
 
-      {/* ───── 상단: 도넛 + 라벨 (가로 가운데, 간격 좁게) ───── */}
+      {/* ───── 상단: 도넛 + 라벨 (중앙 정렬) ───── */}
       <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
         <div className="text-sm text-gray-500 mb-2">
           {year}년 {String(month).padStart(2, "0")}월 근무 현황 (집계: {monthFrom} ~ {monthTo})
         </div>
-
         <div className="w-full flex items-center justify-center gap-4">
-          {/* 라벨 */}
+          {/* 라벨 목록 (항목이름 00일) */}
           <div className="flex flex-col gap-2">
             {donutData.map((it) => (
               <div key={it.name} className="flex items-center gap-2 text-sm">
                 <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: it.color }} />
                 <span className="text-gray-600">{it.name}</span>
-                <span className="text-gray-800 font-medium">: {it.value} 일</span>
+                <span className="text-gray-800 font-medium">: {it.value}{it.unit}</span>
               </div>
             ))}
           </div>
 
-          {/* 도넛 */}
+          {/* 도넛 차트 */}
           <div className="relative w-[260px] h-[180px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <ReTooltip
-                  formatter={(v: any) => [donutTooltip(v as number), ""]}
-                  contentStyle={{ borderRadius: 12, borderColor: "#e5e7eb" }}
-                />
                 <Pie
                   data={donutData}
                   dataKey="value"
@@ -193,6 +185,20 @@ const UserMonthlySummary: React.FC = () => {
                 >
                   {donutData.map((d, i) => <Cell key={i} fill={d.color} />)}
                 </Pie>
+                {/* Recharts Tooltip (항목이름 00일 (xx%)) */}
+                <ReTooltip
+                formatter={(value: any, name: any) => {
+               const v = Number(value || 0);
+               const per = pct(v, totalDays);
+                return [`${v}일 (${per}%)`, name];
+               }}
+                wrapperStyle={{ 
+                 borderRadius: 8, 
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+                  zIndex: 9999               // ← 이 한 줄만 추가!
+                }}
+                contentStyle={{ borderRadius: 8 }}
+              />
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute text-center">
@@ -219,12 +225,18 @@ const UserMonthlySummary: React.FC = () => {
               <span>{row.label}</span>
               <span>{pct(row.value, barTotal)}%</span>
             </div>
-            <div className="w-full h-4 rounded-full overflow-hidden" style={{ backgroundColor: COLORS.bars.base }}>
-              <div
-                className="h-4 rounded-full"
-                style={{ width: `${pct(row.value, barTotal)}%`, backgroundColor: row.color }}
-                title={`${row.label} • ${mmToHHMM(row.value)}`}
-              />
+
+            {/* ✅ 최소 변경: DaisyUI tooltip으로 막대 툴팁 추가 */}
+            <div
+              className="tooltip tooltip-top w-full"
+              data-tip={`${row.label} • ${mmToHHMM(row.value)} (${pct(row.value, barTotal)}%)`}
+            >
+              <div className="w-full h-4 rounded-full overflow-hidden" style={{ backgroundColor: COLORS.bars.base }}>
+                <div
+                  className="h-4 rounded-full"
+                  style={{ width: `${pct(row.value, barTotal)}%`, backgroundColor: row.color }}
+                />
+              </div>
             </div>
           </div>
         ))}
