@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
+import APIConfig from '../../configs/API.config';
 
 dayjs.locale("ko");
 
@@ -95,13 +96,13 @@ const UserMonthlySummary: React.FC = () => {
 
         // 월간 대시보드(백엔드: /attendance/dashboard/monthly)
         const m = await fetchJSON<MonthlyDashboardResponse>(
-          `/attendance/dashboard/monthly?year=${year}&month=${month}`
+          `${APIConfig}/attendance/dashboard/monthly?year=${year}&month=${month}`
         );
         if (!ignore) setMonthly(m);
 
         // 주간 KPI(월~오늘) (백엔드: /attendance/kpi)
         const w = await fetchJSON<WeeklyKpiResponse>(
-          `/attendance/kpi?from=${weekFrom}&to=${weekTo}`
+          `${APIConfig}/attendance/kpi?from=${weekFrom}&to=${weekTo}`
         );
         if (!ignore) setWeekly(w);
       } catch (e: any) {
