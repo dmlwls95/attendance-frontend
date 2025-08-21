@@ -119,10 +119,10 @@ export default function HomePage() {
 
 
     // 시간 문자열 → Date
-    const toDate = (s?: string | null) => (s ? new Date(s) : null);
+    //const toDate = (s?: string | null) => (s ? new Date(s) : null);
 
     // 바(막대) 길이 계산용: 시간(정수)로 변환
-    const hourOf = (d: Date) => d.getHours() + d.getMinutes() / 60;
+    //const hourOf = (d: Date) => d.getHours() + d.getMinutes() / 60;
 
     function StatusBadge({ status }: { status: WorkingStatus }) {
     const cls =
@@ -137,48 +137,48 @@ export default function HomePage() {
         : "결근";
     return <span className={cls}>{label}</span>;
     }
-    function TimeBar({ row }: { row: WorkingRowDTO }) {
-    const ci = toDate(row.clockIn);
-    const co = toDate(row.clockOut);
-    const start = ci ? hourOf(ci) : null;
-    const end = co ? hourOf(co) : null;
+    /*function TimeBar({ row }: { row: WorkingRowDTO }) {
+      const ci = toDate(row.clockIn);
+      const co = toDate(row.clockOut);
+      const start = ci ? hourOf(ci) : null;
+      const end = co ? hourOf(co) : null;
 
-    // PRESENT(퇴근 전)인 경우 현재 시간까지 표시
-    const nowH = hourOf(new Date());
-    const barStart = start ?? 0; // 시작 없으면 0에 붙임
-    const barEnd =
-        row.status === "PRESENT" && start !== null ? Math.max(start, Math.min(nowH, 24))
-        : end ?? start ?? 0;
+      // PRESENT(퇴근 전)인 경우 현재 시간까지 표시
+      const nowH = hourOf(new Date());
+      const barStart = start ?? 0; // 시작 없으면 0에 붙임
+      const barEnd =
+          row.status === "PRESENT" && start !== null ? Math.max(start, Math.min(nowH, 24))
+          : end ?? start ?? 0;
 
-    if (barEnd <= barStart) return null;
+      if (barEnd <= barStart) return null;
 
-    // 셀 하나를 2.5rem로 계산한 기존 스타일 유지
-    const widthRem = (barEnd - barStart) * 2.5;
-    const leftRem = barStart * 2.5;
-    const tone =
-        row.status === "PRESENT" ? "bg-neutral"
-        : row.status === "LEFT"   ? "bg-primary"
-        : row.status === "LEAVE"  ? "bg-accent"
-        : "bg-base-300";
+      // 셀 하나를 2.5rem로 계산한 기존 스타일 유지
+      const widthRem = (barEnd - barStart) * 2.5;
+      const leftRem = barStart * 2.5;
+      const tone =
+          row.status === "PRESENT" ? "bg-neutral"
+          : row.status === "LEFT"   ? "bg-primary"
+          : row.status === "LEAVE"  ? "bg-accent"
+          : "bg-base-300";
 
-    return (
-        <div
-        className={`absolute inset-y-1 ${tone} rounded-sm`}
-        style={{ left: `${leftRem}rem`, width: `${widthRem}rem` }}
-        title={
-            start !== null
-            ? `${ci?.getHours().toString().padStart(2,"0")}:${ci?.getMinutes().toString().padStart(2,"0")} ~ ${
-                row.status === "PRESENT"
-                    ? "현재"
-                    : end !== null
-                    ? `${co?.getHours().toString().padStart(2,"0")}:${co?.getMinutes().toString().padStart(2,"0")}`
-                    : "—"
-                }`
-            : "기록 없음"
-        }
-        />
-    );
-    }
+      return (
+          <div
+          className={`absolute inset-y-1 ${tone} rounded-sm`}
+          style={{ left: `${leftRem}rem`, width: `${widthRem}rem` }}
+          title={
+              start !== null
+              ? `${ci?.getHours().toString().padStart(2,"0")}:${ci?.getMinutes().toString().padStart(2,"0")} ~ ${
+                  row.status === "PRESENT"
+                      ? "현재"
+                      : end !== null
+                      ? `${co?.getHours().toString().padStart(2,"0")}:${co?.getMinutes().toString().padStart(2,"0")}`
+                      : "—"
+                  }`
+              : "기록 없음"
+          }
+          />
+      );
+    }*/
   return (
     <div className="w-full p-4 md:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

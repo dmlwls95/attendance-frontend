@@ -2,18 +2,17 @@ import { useState } from "react";
 import APIConfig from "../configs/API.config";
 
 
+type MonthlySummary = {
+  totalDaysWorked: number;
+  totalHours: number;
+  averageHours: number;
+  missedDays: number;
+}
+
 export default function MonthlySummary() {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   
-  type MonthlySummary = {
-    userId: number;
-    email: string;
-    totalDaysWorked: number;
-    totalHours: number;
-    averageHours: number;
-    missedDays: number;
-  }
   const [summary, setSummary] = useState<MonthlySummary | null>();
 
   const handleFecth = async () => {
@@ -21,7 +20,8 @@ export default function MonthlySummary() {
     {
       try {
         const data = await fetchMonthlySummary(selectedYear, selectedMonth);
-        setSummary(data[0]);
+        setSummary(data);
+        
       } catch (e) {
         console.error(e);
       }
@@ -72,10 +72,9 @@ export default function MonthlySummary() {
 
 
       {summary &&(
-        <div className="grid grid-cols-2 gap-4 p-4">
-        <div className="stats stats-vertical lg:stats-horizontal shadow">
+        <div className="stats stats-vertical lg:stats-horizontal shadow w-full">
         <div className="stat">
-          <div className="stat-title">출근일</div>
+          <div className="stat-title">평균 출근일</div>
           <div className="stat-value">{summary.totalDaysWorked}</div>
           
         </div>
@@ -92,18 +91,17 @@ export default function MonthlySummary() {
           
         </div>
         <div className="stat">
-          <div className="stat-title">결근일</div>
+          <div className="stat-title">평균 결근일</div>
           <div className="stat-value">{summary.missedDays}</div>
         </div>
         </div>
-      </div>
       )}
       
     </div>
   );
 }
 
-async function fetchMonthlySummary(year:number, month: number) {
+async function fetchMonthlySummary(year:number, month: number): Promise<MonthlySummary> {
   const token = localStorage.getItem("token");
   const response = await fetch(
     `${APIConfig}/admin/attendance/monthly-summary?year=${year}&month=${month}`,{
