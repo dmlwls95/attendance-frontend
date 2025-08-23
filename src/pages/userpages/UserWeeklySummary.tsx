@@ -79,30 +79,117 @@ const UserWeeklySummary: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl p-4 mb-6">
+        <div className="max-w-5xl mx-auto w-full">
 
-        <div className="text-sm text-gray-500 mb-2">
-          {year}년 {month + 1}월 {weekInMonth}째주 근무 현황 [집계: {startOfWeek} ~ {endOfWeek}]
-        </div>
+          <div className="text-lg text-gray-500 font-semibold mb-5">
+            {year}년 {month + 1}월 {weekInMonth}째주 근무 현황 (집계: {startOfWeek} ~ {endOfWeek})
+          </div>
 
-        <div className="flex gap-4 mb-6">
-          <div className="w-2/3 bg-white rounded-lg border-2 border-gray-400">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={daydatas.map(daydata => ({
-                  name: dayjs(daydata.date).format("MM/DD"),
-                  근무시간: daydata.workTime,
-                  잔여시간: daydata.dayType == "WEEKEND" ? 0 : 540 - daydata.workTime,
-                  잔업시간: daydata.overTime,
-                }))}
-                margin={{ top: 20, right: 20, bottom: 0, left: 0 }}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="근무시간" stackId="a" fill={COLORS.chart.work} />
-                <Bar dataKey="잔여시간" stackId="a" fill={COLORS.chart.left} />
-                <Bar dataKey="잔업시간" stackId="b" fill={COLORS.chart.over} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="flex gap-4 mb-1">
+            <div className="w-2/3 bg-white rounded-lg border-2 border-gray-400">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={daydatas.map(daydata => ({
+                    name: dayjs(daydata.date).format("MM/DD") + `${(daydata.dayOfweek)}`,
+                    근무시간: daydata.workTime,
+                    잔여시간: daydata.dayType == "WEEKEND" ? 0 : 540 - daydata.workTime,
+                    잔업시간: daydata.overTime,
+                  }))}
+                  margin={{ top: 30, right: 20, bottom: -10, left: 0 }}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="근무시간" stackId="a" fill={COLORS.chart.work} />
+                  <Bar dataKey="잔여시간" stackId="a" fill={COLORS.chart.left} />
+                  <Bar dataKey="잔업시간" stackId="b" fill={COLORS.chart.over} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+
+            <div className="w-1/3 bg-white rounded-lg border-2 border-gray-400">
+              <div className="flex gap-4">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        {
+                          name: "근무시간",
+                          value: weekdata?.totalWorktime,
+                          color: COLORS.chart.work
+                        },
+                        {
+                          name: "잔여시간",
+                          value: weekdata?.leftTime,
+                          color: COLORS.chart.left
+                        }
+                      ]}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      startAngle={0}
+                      endAngle={360}
+                      innerRadius={70}
+                      outerRadius={100}
+                      cornerRadius={5}
+                      paddingAngle={0}
+                      label
+                    >
+                      {[
+                        COLORS.chart.work,
+                        COLORS.chart.left
+                      ].map((fill, index) => (
+                        <Cell key={`cell-${index}`} fill={fill} />
+                      ))}
+                    </Pie>
+
+                    <Pie
+                      data={[
+                        {
+                          name: "잔업시간",
+                          value: weekdata?.totalOvertime,
+                          color: COLORS.chart.over
+                        },
+                      ]}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      startAngle={0}
+                      endAngle={weekdata
+                        ? (360 * (weekdata.totalOvertime)) / (10 * 60)
+                        : 0}
+                      innerRadius={20}
+                      outerRadius={50}
+                      cornerRadius={5}
+                      paddingAngle={0}
+                      label
+                    >
+                      {/* 색상 지정도 inline으로 */}
+                      {[
+                        COLORS.chart.over,
+                      ].map((fill, index) => (
+                        <Cell key={`cell-${index}`} fill={fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500 font-semibold p-1">
+                  <span style={{ color: COLORS.chart.work }}>■</span> 근무시간 : {weekdata?.totalWorktime} 시간
+                </div>
+                <div className="text-sm text-gray-500 font-semibold p-1">
+                  <span style={{ color: COLORS.chart.left }}>■</span> 잔여시간 : {weekdata?.leftTime} 시간
+                </div>
+                <div className="text-sm text-gray-500 font-semibold p-1">
+                  <span style={{ color: COLORS.chart.over }}>■</span> 잔업시간 : {weekdata?.totalOvertime} 시간
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
