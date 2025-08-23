@@ -57,7 +57,12 @@ type WeeklyKpiResponse = {
 
 /* HTML 반환(로그인 만료/권한 문제) 대비 안전 fetch */
 async function fetchJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url, { credentials: "include" });
+  const token = localStorage.getItem("token");
+  const res = await fetch(url, 
+            { method: "GET", 
+              headers: {Authorization: `Bearer ${token}`},
+              credentials: "include" }
+            );
   const textCt = res.headers.get("content-type") || "";
   if (!res.ok) {
     const body = await res.text().catch(() => "");
@@ -104,6 +109,7 @@ const UserMonthlySummary: React.FC = () => {
         const w = await fetchJSON<WeeklyKpiResponse>(
           `${APIConfig}/attendance/kpi?from=${weekFrom}&to=${weekTo}`
         );
+        
         if (!ignore) setWeekly(w);
       } catch (e: any) {
         if (!ignore) setError(`데이터를 불러오지 못했습니다. ${e?.message ?? ""}`);
