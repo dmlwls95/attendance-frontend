@@ -34,7 +34,7 @@ export default function NavMemberCard()
 
     return (
         <div>
-            <div className="card card-xs card-border bg-base-20 ">
+            <div className="card card-xs bg-base-20 ">
             <div className="card-body">
                 <div className="flex">
 
