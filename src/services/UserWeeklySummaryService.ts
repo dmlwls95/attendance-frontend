@@ -6,7 +6,7 @@ export interface DayOfWeekResponse {
   date : string;
   workTime : number;
   overTime : number;
-  status : "NOMAL" | "LATE" | "ABSENCE" | "LEFTEARLY" | "LATEANDLEFTEARLY" | "DEFAULT";
+  status : "NORMAL" | "LATE" | "ABSENCE" | "LEFTEARLY" | "LATEANDLEFTEARLY" | "DEFAULT";
   dayType : "WEEKDAY" | "WEEKEND";
 }
 
