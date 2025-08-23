@@ -6,8 +6,8 @@ export interface DayOfWeekResponse {
   date : string;
   workTime : number;
   overTime : number;
-  status : "NOMAL" | "LATE" | "ABSENCE" | "LEFTEARLY" | "LATEANDLEFTEARLY";
-
+  status : "NOMAL" | "LATE" | "ABSENCE" | "LEFTEARLY" | "LATEANDLEFTEARLY" | "DEFAULT";
+  dayType : "WEEKDAY" | "WEEKEND";
 }
 
 export interface WeeklyDashboardResponse {
@@ -18,15 +18,15 @@ export interface WeeklyDashboardResponse {
   totalTime : number;
 }
 
-export async function fetchWeeklyData(): Promise<WeeklyDashboardResponse> {
+export async function getWeeklyData(date : string): Promise<WeeklyDashboardResponse> {
 
   const token = localStorage.getItem("token");
-  const response = await fetch(`${APIConfig}/dashboard/weekly`, 
+  const response = await fetch(`${APIConfig}/attendance/dashboard/weekly?date=${date}`, 
                     { method: "GET", 
                       headers: {Authorization: `Bearer ${token}`},
                       credentials: "include"}          
                   );
-
+  
   if (!response.ok){
     console.error(response.statusText);
     throw new Error("조회 실패");
