@@ -10,6 +10,7 @@ const COLORS = {
     work: "#99A1EE", // 근무 시간
     left: "#2DD4BF", // 잔여 시간
     over: "#828892", // 잔업 시간
+    holiday:"#FFB7AE" // 휴일
   }
 };
 
@@ -131,10 +132,9 @@ const UserWeeklySummary: React.FC = () => {
                       startAngle={0}
                       endAngle={360}
                       innerRadius={70}
-                      outerRadius={100}
+                      outerRadius={110}
                       cornerRadius={5}
-                      paddingAngle={0}
-                      label
+                      paddingAngle={2}
                     >
                       {[
                         COLORS.chart.work,
@@ -161,10 +161,9 @@ const UserWeeklySummary: React.FC = () => {
                         ? (360 * (weekdata.totalOvertime)) / (10 * 60)
                         : 0}
                       innerRadius={20}
-                      outerRadius={50}
+                      outerRadius={60}
                       cornerRadius={5}
-                      paddingAngle={0}
-                      label
+                      paddingAngle={2}
                     >
                       {/* 색상 지정도 inline으로 */}
                       {[
@@ -283,9 +282,59 @@ const UserWeeklySummary: React.FC = () => {
         <h2 className="text-xl font-semibold">지각 및 결근 현황</h2>
       </div>
       <div className="flex gap-4 mb-6">
+        <div className="bg-white rounded-xl p-4 w-1/3 h-60">
+          <ResponsiveContainer width="100%" height={150}>
+            <PieChart>
+              <Pie
+                data={[
+                  {
+                    name: "정상출근",
+                    value: weekdata?.info.filter(index => index.status === "NORMAL").length,
+                    color: COLORS.chart.left
+                  },
+                  {
+                    name: "지각",
+                    value: weekdata?.info.filter(index => index.status === "LATE").length,
+                    color: COLORS.chart.work
+                  },
+                  {
+                    name: "휴일",
+                    value: weekdata?.info.filter(index => index.dayType === "WEEKEND").length,
+                    color: COLORS.chart.holiday
+                  }
+                ]}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                startAngle={0}
+                endAngle={360}
+                innerRadius={30}
+                outerRadius={70}
+                cornerRadius={5}
+                paddingAngle={2}
+              >
+                {[
+                  COLORS.chart.work,
+                  COLORS.chart.left,
+                  COLORS.chart.over,
+                  COLORS.chart.holiday
+                ].map((fill, index) => (
+                  <Cell key={`cell-${index}`} fill={fill} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
 
-        <div className="bg-white rounded-xl p-4 w-1/3 h-60"></div>
-        <div className="bg-white rounded-xl p-4 flex-1 h-60"></div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 flex-1 h-60">
+
+
+
+
+        </div>
       </div>
     </div>
   );
