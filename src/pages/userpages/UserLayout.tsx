@@ -4,14 +4,16 @@ import Notification from "../../components/Notification";
 
 export default function UserLayout()
 {
+    const MAIN_ICON_SRC = "/globalin.svg";
+
     return(
         <div className="flex flex-col h-screen w-full">
-            <div className="navbar bg-base-100 shadow-sm">
-                <div className="navbar-start">
+            <div className="navbar bg-base-100 px-4 relative">
+                <div className="navbar-start flex items-center gap-10">
                     <div className="dropdown">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> 
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /> 
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"> 
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h20M4 12h15M4 18h20" /> 
                             </svg>
                         </div>
                         <ul
@@ -24,16 +26,18 @@ export default function UserLayout()
                             <li><a href="/user/userboard/notice">사내 게시판</a></li>
                         </ul>
                     </div>
+                <span className="text-lg font-semibold whitespace-nowrap">유저페이지</span>
                 </div>
+
                 <div className="navbar-center">
-                    <a className="btn btn-ghost text-xl">유저 페이지</a>
+                    <a className="btn btn-ghost text-xl">
+                        <img src={MAIN_ICON_SRC} alt="메인 아이콘" className="w-32 h-12"/>
+                    </a>
                 </div>
-                <div className="navbar-end flex items-center space-x-4">
+                <div className="navbar-end flex items-center gap-3">
                     <Notification/>
+                    <NavMemberCard/>
                 </div> 
-                <div className="navbar-end">
-                    {NavMemberCard()}
-                </div>
             </div>
 
             {/* 하위 페이지 렌더링 영역 */}
