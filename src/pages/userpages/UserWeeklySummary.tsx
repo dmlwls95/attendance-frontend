@@ -343,29 +343,29 @@ const UserWeeklySummary: React.FC = () => {
             </div>
           </div>
         </div>
-        
-        <div className="bg-white rounded-xl p-4 flex-1 max-h-full overflow-y-scroll space-y-2">
-            {daydatas.map((day, index) => (
-              <div key={index} className="bg-white rounded-lg p-4 w-full border-2 border-gray-500">
-                <div className="text-sm text-gray-500 font-semibold mb-2">
-                  {day.date} ({day.dayOfweek}) [09:00 ~ 18:00]
-                </div>
 
-                <div className="mb-1 font-semibold">
-                  <span className={`${day.status === "LATE" ? "text-red-500" : day.status === "NORMAL" ? "text-blue-500" : "text-gray-500"}`}>
-                    {day.dayType === "WEEKEND" ? "[휴일]" : (day.status === "NORMAL" ? "[출근]" : day.status === "LATE" ? "[지각]" : "-")}
-                  </span>
-                  <span className="text-gray-500"> | 출근시간  </span>
-                  <span className={`text-gray-500 ${day.status === "LATE" ? "text-red-500" : ""}`}>
-                    {day.clockIn ?? "  "}
-                  </span>
-                  <span className="text-gray-500"> | 퇴근시간  </span>
-                  <span className="text-gray-500">
-                    {day.clockOut ?? "  "}
-                  </span>
-                </div>
+        <div className="bg-white rounded-xl p-4 flex-1 max-h-full overflow-y-scroll space-y-2">
+          {daydatas.map((day, index) => (
+            <div key={index} className="bg-white rounded-lg p-4 w-full border-2 border-gray-500">
+              <div className="text-sm text-gray-500 font-semibold mb-2">
+                {day.date} ({day.dayOfweek}) [09:00 ~ 18:00]
               </div>
-            ))}
+
+              <div className="mb-1 font-semibold">
+                <span className={`${day.status === "LATE" ? "text-red-500" : day.status === "NORMAL" ? "text-blue-500" : "text-gray-500"}`}>
+                  {day.dayType === "WEEKEND" ? "[휴일]" : (day.status === "NORMAL" ? "[출근]" : day.status === "LATE" ? "[지각]" : "-")}
+                </span>
+                <span className="text-gray-500"> | 출근시간  </span>
+                <span className={`text-gray-500 ${day.status === "LATE" ? "text-red-500" : ""}`}>
+                  {day.clockIn ?? "  "}
+                </span>
+                <span className="text-gray-500"> | 퇴근시간  </span>
+                <span className="text-gray-500">
+                  {day.clockOut ?? "  "}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

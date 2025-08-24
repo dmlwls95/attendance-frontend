@@ -4,7 +4,7 @@ import Notification from "../../components/Notification";
 
 export default function UserLayout()
 {
-    const MAIN_ICON_SRC = "/globalin.svg";
+    const MAIN_ICON_SRC = "/Main_icon.svg";
 
     return(
         <div className="flex flex-col h-screen w-full">
@@ -31,7 +31,7 @@ export default function UserLayout()
 
                 <div className="navbar-center">
                     <a className="btn btn-ghost text-xl">
-                        <img src={MAIN_ICON_SRC} alt="메인 아이콘" className="w-32 h-12"/>
+                        <img src={MAIN_ICON_SRC} alt="메인 아이콘" className="w-40 h-20"/>
                     </a>
                 </div>
                 <div className="navbar-end flex items-center gap-3">
