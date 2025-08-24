@@ -8,6 +8,8 @@ export interface DayOfWeekResponse {
   overTime : number;
   status : "NORMAL" | "LATE" | "ABSENCE" | "LEFTEARLY" | "LATEANDLEFTEARLY" | "DEFAULT";
   dayType : "WEEKDAY" | "WEEKEND";
+  clockIn : string;
+  clockOut : string;
 }
 
 export interface WeeklyDashboardResponse {

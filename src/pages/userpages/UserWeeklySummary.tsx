@@ -8,9 +8,9 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 const COLORS = {
   chart: {
     work: "#99A1EE", // 근무 시간
-    left: "#2DD4BF", // 잔여 시간
-    over: "#828892", // 잔업 시간
-    holiday:"#FFB7AE" // 휴일
+    left: "#828892", // 잔여 시간
+    over: "#2DD4BF", // 잔업 시간
+    holiday: "#FFB7AE" // 휴일
   }
 };
 
@@ -19,8 +19,8 @@ const UserWeeklySummary: React.FC = () => {
   const [weekdata, setWeekdata] = useState<WeeklyDashboardResponse>();
   const [daydatas, setDaydatas] = useState<DayOfWeekResponse[]>([]);
 
-  const CHART_ICON_SRC = "/ChartLine.svg";
-  const TABLE_ICON_SRC = "/Table.svg";
+  const CHART_ICON_SRC = "/ChartLine_Dark.svg";
+  const TABLE_ICON_SRC = "/Table_Dark.svg";
 
   const now = new Date("2025-08-13");//dayjs();
   const year = now.getFullYear();
@@ -82,7 +82,7 @@ const UserWeeklySummary: React.FC = () => {
       <div className="bg-white rounded-xl p-4 mb-6">
         <div className="max-w-5xl mx-auto w-full">
 
-          <div className="text-lg text-gray-500 font-semibold mb-5">
+          <div className="text-base text-gray-500 font-semibold mb-5">
             {year}년 {month + 1}월 {weekInMonth}째주 근무 현황 (집계: {startOfWeek} ~ {endOfWeek})
           </div>
 
@@ -133,7 +133,7 @@ const UserWeeklySummary: React.FC = () => {
                       endAngle={360}
                       innerRadius={70}
                       outerRadius={110}
-                      cornerRadius={5}
+                      cornerRadius={0}
                       paddingAngle={2}
                     >
                       {[
@@ -162,7 +162,7 @@ const UserWeeklySummary: React.FC = () => {
                         : 0}
                       innerRadius={20}
                       outerRadius={60}
-                      cornerRadius={5}
+                      cornerRadius={0}
                       paddingAngle={2}
                     >
                       {/* 색상 지정도 inline으로 */}
@@ -178,13 +178,13 @@ const UserWeeklySummary: React.FC = () => {
               </div>
               <div>
                 <div className="text-sm text-gray-500 font-semibold p-1">
-                  <span style={{ color: COLORS.chart.work }}>■</span> 근무시간 : {weekdata?.totalWorktime} 시간
+                  <span style={{ color: COLORS.chart.work }}>■</span> 근무시간 : {weekdata?.totalWorktime} 분
                 </div>
                 <div className="text-sm text-gray-500 font-semibold p-1">
-                  <span style={{ color: COLORS.chart.left }}>■</span> 잔여시간 : {weekdata?.leftTime} 시간
+                  <span style={{ color: COLORS.chart.left }}>■</span> 잔여시간 : {weekdata?.leftTime} 분
                 </div>
                 <div className="text-sm text-gray-500 font-semibold p-1">
-                  <span style={{ color: COLORS.chart.over }}>■</span> 잔업시간 : {weekdata?.totalOvertime} 시간
+                  <span style={{ color: COLORS.chart.over }}>■</span> 잔업시간 : {weekdata?.totalOvertime} 분 (최대 600분)
                 </div>
               </div>
 
@@ -281,59 +281,91 @@ const UserWeeklySummary: React.FC = () => {
         )}
         <h2 className="text-xl font-semibold">지각 및 결근 현황</h2>
       </div>
-      <div className="flex gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 w-1/3 h-60">
-          <ResponsiveContainer width="100%" height={150}>
-            <PieChart>
-              <Pie
-                data={[
-                  {
-                    name: "정상출근",
-                    value: weekdata?.info.filter(index => index.status === "NORMAL").length,
-                    color: COLORS.chart.left
-                  },
-                  {
-                    name: "지각",
-                    value: weekdata?.info.filter(index => index.status === "LATE").length,
-                    color: COLORS.chart.work
-                  },
-                  {
-                    name: "휴일",
-                    value: weekdata?.info.filter(index => index.dayType === "WEEKEND").length,
-                    color: COLORS.chart.holiday
-                  }
-                ]}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                startAngle={0}
-                endAngle={360}
-                innerRadius={30}
-                outerRadius={70}
-                cornerRadius={5}
-                paddingAngle={2}
-              >
-                {[
-                  COLORS.chart.work,
-                  COLORS.chart.left,
-                  COLORS.chart.over,
-                  COLORS.chart.holiday
-                ].map((fill, index) => (
-                  <Cell key={`cell-${index}`} fill={fill} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
 
+      <div className="flex gap-4 mb-6 h-[300px]">
+        <div className="bg-white rounded-xl p-4 w-2/5 h-full">
+          <div className="flex items-center justify-center h-full gap-4">
+            <div className="w-60 h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      {
+                        name: "정상출근",
+                        value: weekdata?.info.filter(index => index.status === "NORMAL").length,
+                        color: COLORS.chart.left
+                      },
+                      {
+                        name: "지각",
+                        value: weekdata?.info.filter(index => index.status === "LATE").length,
+                        color: COLORS.chart.work
+                      },
+                      {
+                        name: "휴일",
+                        value: weekdata?.info.filter(index => index.dayType === "WEEKEND").length,
+                        color: COLORS.chart.holiday
+                      }
+                    ]}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    startAngle={0}
+                    endAngle={360}
+                    innerRadius={35}
+                    outerRadius={100}
+                    cornerRadius={0}
+                    paddingAngle={3}
+                  >
+                    {[
+                      COLORS.chart.work,
+                      COLORS.chart.left,
+                      COLORS.chart.holiday
+                    ].map((fill, index) => (
+                      <Cell key={`cell-${index}`} fill={fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="text-base text-gray-700 font-semibold space-y-1">
+              <div className="flex items-center gap-1">
+                <span style={{ color: COLORS.chart.work }}>■</span> 출근 : {weekdata?.info.filter(index => index.status === "NORMAL").length} 회
+              </div>
+              <div className="flex items-center gap-1">
+                <span style={{ color: COLORS.chart.left }}>■</span> 지각 : {weekdata?.info.filter(index => index.status === "LATE").length} 회
+              </div>
+              <div className="flex items-center gap-1">
+                <span style={{ color: COLORS.chart.holiday }}>■</span> 휴일 : {weekdata?.info.filter(index => index.dayType === "WEEKEND").length} 회
+              </div>
+            </div>
+          </div>
         </div>
+        
+        <div className="bg-white rounded-xl p-4 flex-1 max-h-full overflow-y-scroll space-y-2">
+            {daydatas.map((day, index) => (
+              <div key={index} className="bg-white rounded-lg p-4 w-full border-2 border-gray-500">
+                <div className="text-sm text-gray-500 font-semibold mb-2">
+                  {day.date} ({day.dayOfweek}) [09:00 ~ 18:00]
+                </div>
 
-        <div className="bg-white rounded-xl p-4 flex-1 h-60">
-
-
-
-
+                <div className="mb-1 font-semibold">
+                  <span className={`${day.status === "LATE" ? "text-red-500" : day.status === "NORMAL" ? "text-blue-500" : "text-gray-500"}`}>
+                    {day.dayType === "WEEKEND" ? "[휴일]" : (day.status === "NORMAL" ? "[출근]" : day.status === "LATE" ? "[지각]" : "-")}
+                  </span>
+                  <span className="text-gray-500"> | 출근시간  </span>
+                  <span className={`text-gray-500 ${day.status === "LATE" ? "text-red-500" : ""}`}>
+                    {day.clockIn ?? "  "}
+                  </span>
+                  <span className="text-gray-500"> | 퇴근시간  </span>
+                  <span className="text-gray-500">
+                    {day.clockOut ?? "  "}
+                  </span>
+                </div>
+              </div>
+            ))}
         </div>
       </div>
     </div>
