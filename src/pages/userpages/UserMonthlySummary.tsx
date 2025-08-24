@@ -23,7 +23,7 @@ const COLORS = {
   },
 };
 
-const ICON_SRC = "/icon-monthly.svg";
+const CHART_ICON_SRC = "/ChartLine_Dark.svg";
 
 /* 유틸 */
 const mmToHHMM = (mm?: number) => {
@@ -150,7 +150,7 @@ const UserMonthlySummary: React.FC = () => {
       <div className="flex items-center gap-2 mb-4">
         {iconOk ? (
           <img
-            src={ICON_SRC}
+            src={CHART_ICON_SRC}
             alt="월간 아이콘"
             className="w-6 h-6"
             onError={() => setIconOk(false)}
@@ -210,7 +210,7 @@ const UserMonthlySummary: React.FC = () => {
             </ResponsiveContainer>
             <div className="absolute text-center">
               <div className="text-xs text-gray-500 mb-1">출근율</div>
-              <div className="text-2xl font-semibold">{attendanceRate}%</div>
+              <div className="text-2xl text-gray-500 font-semibold">{attendanceRate}%</div>
               <div className="text-[10px] text-gray-400">
                 {year}-{String(month).padStart(2, "0")}
               </div>
