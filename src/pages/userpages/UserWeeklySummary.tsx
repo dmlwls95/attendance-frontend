@@ -291,19 +291,19 @@ const UserWeeklySummary: React.FC = () => {
                   <Pie
                     data={[
                       {
-                        name: "정상출근",
+                        name: "출근",
                         value: weekdata?.info.filter(index => index.status === "NORMAL").length,
-                        color: COLORS.chart.left
+                        color: COLORS.chart.work
                       },
                       {
                         name: "지각",
                         value: weekdata?.info.filter(index => index.status === "LATE").length,
-                        color: COLORS.chart.work
+                        color: COLORS.chart.holiday
                       },
                       {
                         name: "휴일",
                         value: weekdata?.info.filter(index => index.dayType === "WEEKEND").length,
-                        color: COLORS.chart.holiday
+                        color: COLORS.chart.left
                       }
                     ]}
                     dataKey="value"
@@ -315,12 +315,12 @@ const UserWeeklySummary: React.FC = () => {
                     innerRadius={35}
                     outerRadius={100}
                     cornerRadius={0}
-                    paddingAngle={3}
+                    paddingAngle={1}
                   >
                     {[
                       COLORS.chart.work,
-                      COLORS.chart.left,
-                      COLORS.chart.holiday
+                      COLORS.chart.holiday,
+                      COLORS.chart.left
                     ].map((fill, index) => (
                       <Cell key={`cell-${index}`} fill={fill} />
                     ))}
@@ -335,10 +335,10 @@ const UserWeeklySummary: React.FC = () => {
                 <span style={{ color: COLORS.chart.work }}>■</span> 출근 : {weekdata?.info.filter(index => index.status === "NORMAL").length} 회
               </div>
               <div className="flex items-center gap-1">
-                <span style={{ color: COLORS.chart.left }}>■</span> 지각 : {weekdata?.info.filter(index => index.status === "LATE").length} 회
+                <span style={{ color: COLORS.chart.holiday }}>■</span> 지각 : {weekdata?.info.filter(index => index.status === "LATE").length} 회
               </div>
               <div className="flex items-center gap-1">
-                <span style={{ color: COLORS.chart.holiday }}>■</span> 휴일 : {weekdata?.info.filter(index => index.dayType === "WEEKEND").length} 회
+                <span style={{ color: COLORS.chart.left }}>■</span> 휴일 : {weekdata?.info.filter(index => index.dayType === "WEEKEND").length} 회
               </div>
             </div>
           </div>
