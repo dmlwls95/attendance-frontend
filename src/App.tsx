@@ -1,19 +1,19 @@
-import { BrowserRouter, Route, Routes} from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 
-import LoginPage        from './pages/LoginPage';
-import ProtectedRoute    from './components/ProtectedRoute';
-import AdminLayout       from './pages/AdminLayout';
-import MonthlySummary    from './pages/MonthlySummary';
+import LoginPage from './pages/LoginPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminLayout from './pages/AdminLayout';
+import MonthlySummary from './pages/MonthlySummary';
 import AttendanceHistory from './pages/AttendanceHistory';
-import HomePage          from './pages/HomePage';
-import UserManagement    from './pages/UserManagement';
-import AdminBoardList    from './pages/AdminBoardList';
-import BoardDetail       from './pages/BoardDetail';
-import BoardWrite        from './pages/BoardWrite';
-import BoardEdit         from './pages/BoardEdit';
-import UserBoardList    from './pages/UserBoardList';
-import UserLayout        from './pages/userpages/UserLayout';
+import HomePage from './pages/HomePage';
+import UserManagement from './pages/UserManagement';
+import AdminBoardList from './pages/AdminBoardList';
+import BoardDetail from './pages/BoardDetail';
+import BoardWrite from './pages/BoardWrite';
+import BoardEdit from './pages/BoardEdit';
+import UserBoardList from './pages/UserBoardList';
+import UserLayout from './pages/userpages/UserLayout';
 import UserHomePage from './pages/userpages/UserHomePage';
 import UserWeeklySummary from './pages/userpages/UserWeeklySummary';
 import UserAttendanceHistory from './pages/userpages/UserAttendanceHistory';
@@ -26,6 +26,16 @@ function App() {
       <Routes>
         {/* ───────── 로그인 ───────── */}
         <Route path="/" element={<LoginPage />} />
+
+
+        <Route
+          path="/user/userboard/detail/:id/:type"
+          element={
+            <ProtectedRoute requiredRole="USER">
+              <BoardDetail />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ───────── 관리자 레이아웃 ───────── */}
         <Route
@@ -47,7 +57,7 @@ function App() {
           />
 
           {/* ─ 게시판 ─ */}
-          
+
           <Route
             path="adminboard/:type"
             element={
@@ -125,7 +135,7 @@ function App() {
             path='home'
             element={
               <ProtectedRoute requiredRole='USER'>
-                <UserHomePage/>
+                <UserHomePage />
               </ProtectedRoute>
             }
           >
@@ -135,7 +145,7 @@ function App() {
             path='weeklysummary'
             element={
               <ProtectedRoute requiredRole='USER'>
-                <UserWeeklySummary/>
+                <UserWeeklySummary />
               </ProtectedRoute>
             }
           >
@@ -145,7 +155,7 @@ function App() {
             path='monthlysummary'
             element={
               <ProtectedRoute requiredRole='USER'>
-                <UserMonthlySummary/>
+                <UserMonthlySummary />
               </ProtectedRoute>
             }
           >
@@ -155,7 +165,7 @@ function App() {
             path='attendancehistory'
             element={
               <ProtectedRoute requiredRole='USER'>
-                <UserAttendanceHistory/>
+                <UserAttendanceHistory />
               </ProtectedRoute>
             }
           >
@@ -173,7 +183,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-                    <Route
+          <Route
             path="userboard/write/:type"
             element={
               <ProtectedRoute requiredRole="USER">
@@ -199,7 +209,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-            {/* 주간 근태 현황 */}
+          {/* 주간 근태 현황 */}
           <Route
             path="weekly-attendance"
             element={
@@ -208,7 +218,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-         
+
         </Route>
 
       </Routes>
