@@ -1,4 +1,5 @@
 import APIConfig from "../configs/API.config";
+import {getAuthToken} from "./TokenManagementService";
 
 export type AttendanceHistoryResponse = {
     workDays: number;
@@ -17,7 +18,7 @@ export interface UserAttendanceHistory {
 }
 
 export async function fetchAttendanceHistoryOfMine(from: string, to: string): Promise<AttendanceHistoryResponse> {
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     
     const response = await fetch(
         `${APIConfig}/attendance/summary?from=${from}&to=${to}`, {
@@ -28,6 +29,7 @@ export async function fetchAttendanceHistoryOfMine(from: string, to: string): Pr
             credentials: "include"
         }
     )
+    
     if(!response.ok)
     {
         throw new Error("조회 실패");
@@ -37,7 +39,7 @@ export async function fetchAttendanceHistoryOfMine(from: string, to: string): Pr
 
 export async function fetchAttendanceHistoryExportCsv(from: string, to: string) {
     try {
-        const token = localStorage.getItem("token");
+        const token = getAuthToken();
 
         const response = await fetch(
             `${APIConfig}/user/attendancehistory/export?from=${from}&to=${to}`, {

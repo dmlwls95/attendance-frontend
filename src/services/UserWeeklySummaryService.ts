@@ -1,5 +1,6 @@
 // 유저 주간 근로 분석
 import APIConfig from "../configs/API.config";
+import {getAuthToken} from "./TokenManagementService";
 
 export interface DayOfWeekResponse {
   dayOfweek : string;
@@ -22,7 +23,7 @@ export interface WeeklyDashboardResponse {
 
 export async function getWeeklyData(date : string): Promise<WeeklyDashboardResponse> {
 
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/attendance/dashboard/weekly?date=${date}`, 
                     { method: "GET", 
                       headers: {Authorization: `Bearer ${token}`},

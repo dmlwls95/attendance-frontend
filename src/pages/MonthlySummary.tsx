@@ -1,5 +1,6 @@
 import { useState } from "react";
 import APIConfig from "../configs/API.config";
+import {getAuthToken} from "../services/TokenManagementService";
 
 
 type MonthlySummary = {
@@ -102,7 +103,7 @@ export default function MonthlySummary() {
 }
 
 async function fetchMonthlySummary(year:number, month: number): Promise<MonthlySummary> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(
     `${APIConfig}/admin/attendance/monthly-summary?year=${year}&month=${month}`,{
       method : "GET",

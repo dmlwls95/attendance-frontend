@@ -1,4 +1,5 @@
 import APIConfig from "../configs/API.config";
+import {getAuthToken} from "./TokenManagementService";
 
 
 // enums (백엔드 EventType/SourceType과 1:1 매칭)
@@ -34,7 +35,7 @@ export interface BoardResponse {
 
 
 export async function getRecommendedBoardList() : Promise<BoardResponse[] | string>{
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     const response = await fetch(`${APIConfig}/user/userboard/recenttop`, {
       method: "GET",
       headers: {
@@ -52,7 +53,7 @@ export async function getRecommendedBoardList() : Promise<BoardResponse[] | stri
 }
 
 export async function getRecentAttendanceRecord() : Promise<AttendanceEventResponse[] | string> {
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     const response = await fetch(`${APIConfig}/attendance/recent?howmany=${10}`, {
       method: "GET",
       headers: {
@@ -71,7 +72,7 @@ export async function getRecentAttendanceRecord() : Promise<AttendanceEventRespo
 
 //출근 여부 확인
 export async function hasCheckedInToday(): Promise<boolean> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/attendance/hascheckin`, {
     method: "GET",
     headers: {
@@ -90,7 +91,7 @@ export async function hasCheckedInToday(): Promise<boolean> {
 
 //출근
 export async function postCheckIn() {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/attendance/clock-in`, {
     method: "POST",
     headers: {
@@ -109,7 +110,7 @@ export async function postCheckIn() {
 
 //퇴근
 export async function postCheckOut() {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/attendance/clock-out`, {
     method: "POST",
     headers: {
@@ -129,7 +130,7 @@ export async function postCheckOut() {
 
 //외출
 export async function postOutingStart() {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/attendance/outingstart`, {
     method: "POST",
     headers: {
@@ -148,7 +149,7 @@ export async function postOutingStart() {
 
 //복귀
 export async function postOutingEnd() {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/attendance/outingend`, {
     method: "POST",
     headers: {
@@ -167,7 +168,7 @@ export async function postOutingEnd() {
 
 //외출 여부 확인
 export async function hasBreakOut(): Promise<boolean> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/attendance/hasbreakout`, {
     method: "GET",
     headers: {

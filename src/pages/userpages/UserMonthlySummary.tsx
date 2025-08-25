@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
 import APIConfig from '../../configs/API.config';
+import {getAuthToken} from "../../services/TokenManagementService";
 
 dayjs.locale("ko");
 
@@ -57,7 +58,7 @@ type WeeklyKpiResponse = {
 
 /* HTML 반환(로그인 만료/권한 문제) 대비 안전 fetch */
 async function fetchJSON<T>(url: string): Promise<T> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const res = await fetch(url, 
             { method: "GET", 
               headers: {Authorization: `Bearer ${token}`},

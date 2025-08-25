@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import APIConfig from "../configs/API.config";
 import RoleBadge from "./RoleBadge";
 import { useNavigate } from "react-router-dom";
+import { getAuthToken, removeAuthToken } from "../services/TokenManagementService";
 
 type NavDataResponse = {
     name: string,
@@ -27,7 +28,7 @@ export default function NavMemberCard() {
     }, []);
 
     const onClickLogout = () => {
-        localStorage.removeItem("token");
+        removeAuthToken();
         navigate("/");
     }
 
@@ -56,7 +57,8 @@ export default function NavMemberCard() {
 
 
     async function getNavBarData(): Promise<NavDataResponse> {
-        const token = localStorage.getItem("token");
+        const token = getAuthToken();
+        
         const response = await fetch(
             `${APIConfig}/auth/navdata`, {
             method: "GET",

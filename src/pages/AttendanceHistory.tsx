@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import APIConfig from "../configs/API.config";
+import {getAuthToken} from "../services/TokenManagementService";
 
 type UserResponse = { name: string; email: string };
 type AttendanceResponse = {
@@ -483,7 +484,7 @@ function stripZ(s: string) {
 
 /* ---------- API ---------- */
 async function fetchAllUsersEmailAndName(): Promise<UserResponse[]> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const res = await fetch(`${APIConfig}/admin/getallusers`, {
     method: "GET",
     headers: {
@@ -500,7 +501,7 @@ async function fetchAttendanceHistory(
   from: string,
   to: string
 ): Promise<AttendanceResponse[]> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const res = await fetch(
     `${APIConfig}/admin/attendance/history?from=${from}&to=${to}`,
     {
@@ -521,7 +522,7 @@ async function fetchAttendanceHistoryByEmail(
   from: string,
   to: string
 ): Promise<AttendanceResponse[]> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const res = await fetch(
     `${APIConfig}/admin/attendance/byemail?email=${email}&from=${from}&to=${to}`,
     {
@@ -538,7 +539,7 @@ async function fetchAttendanceHistoryByEmail(
 }
 
 async function fetchExportCsv(from: string, to: string) {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const res = await fetch(
     `${APIConfig}/admin/attendance/export?from=${from}&to=${to}`,
     {
@@ -561,7 +562,7 @@ async function fetchExportCsv(from: string, to: string) {
 }
 
 async function fetchExportCsvbyEmail(email: string, from: string, to: string) {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const res = await fetch(
     `${APIConfig}/admin/attendance/exportbyemail?email=${email}&from=${from}&to=${to}`,
     {
@@ -588,7 +589,7 @@ async function putAttendanceHistory(request: AttendanceUpdateRequest) {
   request.clockIn = removeZ(request.clockIn);
   console.log(request);
   try {
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     const response = await fetch(`${APIConfig}/admin/attendance/history`, {
       method: "PUT",
       headers: {

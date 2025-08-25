@@ -1,4 +1,5 @@
 import APIConfig from "../configs/API.config";
+import {getAuthToken} from "./TokenManagementService";
 export interface AdminHomepageChartDataResponse {
   date: string;          // LocalDate → string 변환됨 (예: "2025-08-14")
   totalEmployees: number;
@@ -24,7 +25,7 @@ export interface WorkingRowDTO {
 export type WorkingStatus = "PRESENT" | "LEFT" | "ABSENT" | "LEAVE";
 //외출 여부 확인
 export async function getChartData(): Promise<AdminHomepageChartDataResponse> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
 
   const response = await fetch(`${APIConfig}/admin/today-summarychart`, {
     method: "GET",
@@ -46,7 +47,7 @@ export async function getChartData(): Promise<AdminHomepageChartDataResponse> {
 export async function getWorkingList(params: {
   date?: string; status?: string; page?: number; size?: number; sortBy?: string; direction?: "asc"|"desc";
 }) {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const query = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== "") query.append(k, String(v));

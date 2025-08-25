@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { Navigate } from "react-router-dom";
+import { getAuthToken } from "../services/TokenManagementService";
 
 interface ProtectedRouteProps {
     children: JSX.Element;
@@ -8,7 +9,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, requiredRole} : ProtectedRouteProps)
 {
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     const role = localStorage.getItem("role");
     if(!token)
     {

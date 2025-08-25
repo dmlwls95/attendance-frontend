@@ -1,5 +1,6 @@
 // services/userService.ts
 import APIConfig from "../configs/API.config";
+import {getAuthToken} from "./TokenManagementService";
 
 export type RegisterFormInfoRequest = {
   depts: string[];
@@ -67,7 +68,7 @@ export type AttendanceResponse = {
 }
 
 export async function getRequiredDataOfRegister(): Promise<RegisterFormInfoRequest> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/admin/usermanagement/forminfo`, {
     method: "GET",
     headers: {
@@ -96,7 +97,7 @@ export async function postRequestRegister(payload: RegisterFormPayload): Promise
     workEndTime,
   } = payload;
 
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const formData = new FormData();
   formData.append("empnum", empNumber);
   formData.append("email", email);
@@ -145,7 +146,7 @@ export async function updateUserInfo(payload: RegisterFormPayload): Promise<Regi
     workEndTime,
   } = payload;
 
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const formData = new FormData();
   formData.append("empnum", empNumber);
   formData.append("email", email);
@@ -185,7 +186,7 @@ export async function getDefaultImageFile(): Promise<File> {
 }
 
 export async function findAndGetUserdata(empno:string): Promise<UserdataResponse | string> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/admin/usermanagement/checkuser?empno=${empno}`, {
     method: "GET",
     headers: {
@@ -204,7 +205,7 @@ export async function findAndGetUserdata(empno:string): Promise<UserdataResponse
 }
 
 export async function  getPagedUsers(page: number, size: number): Promise<PageResponse<UserdataResponse> | string> {
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     const response = await fetch(`${APIConfig}/admin/usermanagement/userlist?page=${page-1}&size=${size}`, {
       method: "GET",
       headers: {
@@ -223,7 +224,7 @@ export async function  getPagedUsers(page: number, size: number): Promise<PageRe
 }
 
 export async function deleteUserByEmpno(empno:string): Promise<RegisterResponse> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const response = await fetch(`${APIConfig}/admin/usermanagement/userdelete?empnum=${empno}`, {
     method: "DELETE",
     headers: {
@@ -237,7 +238,7 @@ export async function deleteUserByEmpno(empno:string): Promise<RegisterResponse>
 }
 
 export async function findAttendanceByEmpnoNdate(empno:string, date : Date): Promise<AttendanceResponse | string> {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   const datestr = date.toISOString().split("T")[0];
   const response = await fetch(`${APIConfig}/admin/usermanagement/findattendance?empnum=${empno}&adate=${datestr}`, {
     method: "GET",
