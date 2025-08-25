@@ -44,7 +44,7 @@ export default function Notification() {
 
     const notificationIconClick = () => {
         setIsOpen(prev => !prev);
-        {console.log(notifications)}
+        { console.log(notifications) }
     }
 
     const notReadToRead = async (index: number) => {
@@ -75,10 +75,39 @@ export default function Notification() {
         );
     }
 
+    const deleteNotification = async (index: number) => {
+
+        const notification = notifications[index];
+
+        try {
+            await axios.delete(`${APIConfig}/notification/${notification.id}/delete`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` }
+            });
+            setNotifications(prev => prev.filter((_, i) => i !== index));
+        } catch (e) { console.error("삭제 처리 실패", e); }
+
+    }
+
     useEffect(() => {
         const readCount = notifications.filter(noti => noti.isRead).length;
         const totalUnread = notifications.length - readCount;
         setUnreadCount(totalUnread);
+
+        if (notifications.length > 3) {
+            // 읽은 알림들만 필터링
+            const readNotis = notifications
+                .map((noti, idx) => ({ ...noti, index: idx }))
+                .filter(noti => noti.isRead);
+
+            if (readNotis.length > 0) {
+                // 가장 오래된 알림 1개 삭제 (맨 마지막 읽은 항목)
+                const oldest = readNotis[readNotis.length - 1];
+                deleteNotification(oldest.index);
+            }
+            else {
+                deleteNotification(notifications.length-1);
+            }
+        }
     }, [notifications]);
 
     return (
