@@ -4,21 +4,20 @@ import { createStompClient } from '../socket/stompClient';
 import APIConfig from '../configs/API.config';
 import './NotificationDropdown.css';
 
-interface notificationInfo{
-    id     : number,
-    boardid    : number,
-    title       : string,
-    writeDate   : string,
-    message     : string,
-    writer      : string,
-    isRead      : boolean
+interface notificationInfo {
+    id: number,
+    boardid: number,
+    title: string,
+    writeDate: string,
+    message: string,
+    writer: string,
+    isRead: boolean
 }
 
 export default function Notification() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [notifications, setNotifications] = useState<notificationInfo[]>([]);
     const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate();
 
     const client = createStompClient();
 
@@ -45,16 +44,16 @@ export default function Notification() {
 
     const notificationIconClick = () => {
         setIsOpen(prev => !prev);
-        console.log(isOpen);
+        {console.log(notifications)}
     }
 
-    const notReadToRead = async(index : number) => {
+    const notReadToRead = async (index: number) => {
         const notification = notifications[index];
 
         try {
-            if(!notification.isRead){
+            if (!notification.isRead) {
                 await axios.post(`${APIConfig}/notification/${notification.id}/read`, null, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}`,},
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}`, },
                 });
 
                 const update = notifications.map((item, i) =>
@@ -67,15 +66,15 @@ export default function Notification() {
 
     }
 
-    const openNoticeWindow = (board_id : number) =>{
+    const openNoticeWindow = (board_id: number) => {
 
         window.open(
-            `/user/userboard/detail/${board_id}/notice`, 
+            `/user/userboard/detail/${board_id}/notice`,
             '_blank',
             'width=600,height=900,left=100,top=100'
         );
     }
-    
+
     useEffect(() => {
         const readCount = notifications.filter(noti => noti.isRead).length;
         const totalUnread = notifications.length - readCount;
@@ -105,33 +104,50 @@ export default function Notification() {
                 </svg>
 
                 {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-3 w-3 rounded-full bg-red-600 ring-2 ring-white" />
+                    <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-red-600 ring-2 ring-white">{unreadCount}</span>
                 )}
             </button>
 
-            {isOpen && notifications.length > 0 && (
-                <div className="notification-dropdown-menu">
-                    <strong>&nbsp;&nbsp;안 읽은 공지 : {unreadCount}</strong>
-                <div className="notification-dropdown">
-                    {notifications.map((notification, index) => (
-                        <div
-                            key={index}
-                            onClick= {() => notReadToRead(index)}
-                            style={{
-                                padding: "10px",
-                                backgroundColor: notification.isRead ? "#919191ff" : "#ffffff",
-                                cursor: "pointer",
-                                borderBottom: "1px solid #ddd",
-                                color: notification.isRead ? "#e0e0e0ff" : "#000000"
-                            }}
-                        >
-                            ■ <strong>{notification.title}</strong>ㆍ<small>{notification.writeDate}</small><br/>
-                            <div>{notification.message}</div>
-                            <div>작성자 : {notification.writer}</div>
-                        </div>
-                    ))}
-                </div>
-                </div>
+            {isOpen && (
+                <>
+                    <div className="absolute top-[calc(100%+10px)] left-0 w-[342px] h-[50px] bg-gray-800 z-50 flex items-center rounded-tl rounded-tr border border-gray-500">
+                        <strong className="pl-4 text-gray-100 text-base">알림</strong>
+                    </div>
+
+                    <div className="overflow-y-scroll"></div>
+                    <div
+                        className="absolute top-[calc(100%+60px)] left-0 w-[342px] h-[600px] overflow-y-scroll bg-gray-800 shadow-md z-50 p-2 space-y-2 rounded-bl rounded-br border-l border-b border-r border-gray-500"
+                    >
+                        {notifications.length > 0 ? (
+                            <>
+                                {notifications.map((notification, index) => (
+                                    <div
+                                        key={index}
+                                        onClick={() => notReadToRead(index)}
+                                        className={`p-2 cursor-pointer border-2 border-gray-300 rounded-md ${notification.isRead ? "bg-gray-300 text-gray-400" : "bg-white text-black"
+                                            }`}
+                                    >
+                                        <div className="flex-1 w-full">
+                                            <div className="font-semibold">{notification.title}</div>
+                                            <div className="text-sm">{notification.message}</div>
+                                            <div className="text-xs text-gray-400 mt-1">작성자: {notification.writer}</div>
+                                            <div className="text-xs text-gray-400">{notification.writeDate}</div>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* 👇 최소 높이 보장용 빈 공간 */}
+                                <div style={{ minHeight: "1000px" }} />
+                            </>
+                        ) : (
+                            <>
+                                <div className="text-center pt-20 text-gray-400 text-2xl">새로운 알림이 없습니다.</div>
+                                <div className="text-center pt-5 pr-14 pl-14 text-gray-400">근태 관리 시스템의 알람을 이곳에서 모아볼 수 있어요.</div>
+                                <div style={{ height: "1000px" }} />
+                            </>
+                        )}
+                    </div>
+                </>
             )}
         </div>
     );
