@@ -18,6 +18,7 @@ export default function Notification() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [notifications, setNotifications] = useState<notificationInfo[]>([]);
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
 
     const client = createStompClient();
 
@@ -67,8 +68,9 @@ export default function Notification() {
     }
 
     const openNoticeWindow = (board_id : number) =>{
+
         window.open(
-            `/userboard/window/detail/${board_id}/notice`,
+            `/user/userboard/detail/${board_id}/notice`, 
             '_blank',
             'width=600,height=900,left=100,top=100'
         );
