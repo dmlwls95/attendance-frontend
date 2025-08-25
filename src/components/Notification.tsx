@@ -93,7 +93,7 @@ export default function Notification() {
         const totalUnread = notifications.length - readCount;
         setUnreadCount(totalUnread);
 
-        if (notifications.length > 3) {
+        if (notifications.length > 20) {
             // 읽은 알림들만 필터링
             const readNotis = notifications
                 .map((noti, idx) => ({ ...noti, index: idx }))
@@ -105,7 +105,7 @@ export default function Notification() {
                 deleteNotification(oldest.index);
             }
             else {
-                deleteNotification(notifications.length-1);
+                deleteNotification(notifications.length - 1);
             }
         }
     }, [notifications]);
@@ -113,13 +113,13 @@ export default function Notification() {
     return (
         <div className="relative inline-block">
             <button
-                className="relative p-2"
+                className="relative p-2 rounded-full border-2"
                 onClick={notificationIconClick}
                 aria-label="알림 보기"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-10 w-10 text-white"
+                    className="h-10 w-10"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -133,7 +133,11 @@ export default function Notification() {
                 </svg>
 
                 {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-red-600 ring-2 ring-white">{unreadCount}</span>
+                    <span
+                        className={`absolute top-0 right-0 flex items-center justify-center h-5 rounded-full bg-red-600 ring-2 ring-white text-white text-sm font-bold ${unreadCount > 10 ? 'min-w-[1.5rem] px-1' : 'w-5'}`}
+                    >
+                        {unreadCount > 10 ? '10+' : unreadCount}
+                    </span>
                 )}
             </button>
 
