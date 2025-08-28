@@ -22,31 +22,31 @@ const UserWeeklySummary: React.FC = () => {
   const CHART_ICON_SRC = "/ChartLine_Dark.svg";
   const TABLE_ICON_SRC = "/Table_Dark.svg";
 
-  const now = new Date("2025-08-13");//dayjs();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const now = dayjs();  // or dayjs() for 현재 날짜
+  const year = now.year();
+  const month = now.month(); // 0-based (1월: 0, 8월: 7)
 
   // 이번 달의 첫 번째 날
-  const startOfMonth = new Date(year, month, 1);
+  const startOfMonth = now.startOf('month');
 
   // 오늘 날짜가 이번 달의 며칠째인지
-  const dateInMonth = now.getDate();
+  const dateInMonth = now.date(); // 1-based (13일 → 13)
 
-  // 이번 달의 첫 날이 무슨 요일인지 (0: 일요일, 1: 월요일, ...)
-  const startWeekDay = startOfMonth.getDay();
+  // 이번 달 첫 날의 요일 (0: 일요일, 1: 월요일, ...)
+  const startWeekDay = startOfMonth.day();
 
   // 몇 번째 주인지 계산 (1-based)
   const weekInMonth = Math.ceil((dateInMonth + startWeekDay) / 7);
 
+  // 주의 시작일, 종료일 추출
   const startOfWeek = daydatas.length >= 7 ? daydatas[0].date : null;
   const endOfWeek = daydatas.length >= 7 ? daydatas[6].date : null;
-
 
   const [iconOk, setIconOk] = useState(true);
 
   const getWeeklySummaryDatas = async () => {
     try {
-      const data = await getWeeklyData("2025-08-13");//(now.format("YYYY-MM-DD"));
+      const data = await getWeeklyData((now.format("YYYY-MM-DD")));//(now.format("YYYY-MM-DD"));
 
       setWeekdata(data);
       setDaydatas(data.info);
@@ -96,8 +96,8 @@ const UserWeeklySummary: React.FC = () => {
                     잔여시간: daydata.dayType == "WEEKEND" ? 0 : 540 - daydata.workTime,
                     잔업시간: daydata.overTime,
                   }))}
-                  margin={{ top: 30, right: 20, bottom: -10, left: 0 }}>
-                  <XAxis dataKey="name" />
+                  margin={{ top: 30, right: 20, bottom: 0, left: 0 }}>
+                  <XAxis dataKey="name" tickMargin={10}/>
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="근무시간" stackId="a" fill={COLORS.chart.work} />
@@ -355,13 +355,13 @@ const UserWeeklySummary: React.FC = () => {
                 <span className={`${day.status === "LATE" ? "text-red-500" : day.status === "NORMAL" ? "text-blue-500" : "text-gray-500"}`}>
                   {day.dayType === "WEEKEND" ? "[휴일]" : (day.status === "NORMAL" ? "[출근]" : day.status === "LATE" ? "[지각]" : "-")}
                 </span>
-                <span className="text-gray-500"> | 출근시간  </span>
+                <span className="text-gray-500"> | 출근시간 :  </span>
                 <span className={`text-gray-500 ${day.status === "LATE" ? "text-red-500" : ""}`}>
-                  {day.clockIn ?? "  "}
+                  {day.clockIn ? dayjs(day.clockIn).format("HH:mm:ss") : " - "}
                 </span>
-                <span className="text-gray-500"> | 퇴근시간  </span>
+                <span className="text-gray-500"> | 퇴근시간 :  </span>
                 <span className="text-gray-500">
-                  {day.clockOut ?? "  "}
+                  {day.clockIn ? dayjs(day.clockOut).format("HH:mm:ss") : " - "}
                 </span>
               </div>
             </div>

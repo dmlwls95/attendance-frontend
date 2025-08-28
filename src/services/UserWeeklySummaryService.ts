@@ -32,7 +32,7 @@ export async function getWeeklyData(date : string): Promise<WeeklyDashboardRespo
   
   if (!response.ok){
     console.error(response.statusText);
-    throw new Error("조회 실패");
+    throw new Error("주간 데이터 조회 실패");
   }
 
   return await response.json();
