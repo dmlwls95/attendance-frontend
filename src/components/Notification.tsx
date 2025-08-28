@@ -11,7 +11,7 @@ interface notificationInfo {
     writeDate: string,
     message: string,
     writer: string,
-    isRead: boolean
+    isRead: string
 }
 
 export default function Notification() {
@@ -19,13 +19,24 @@ export default function Notification() {
     const [notifications, setNotifications] = useState<notificationInfo[]>([]);
     const [isOpen, setIsOpen] = useState(false);
 
+    const init = async () => {
+        try {
+            const noti = await axios.get(`${APIConfig}/notification/init`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}`, },
+            });
+            console.log(noti);
+
+            setNotifications(noti.data);
+
+        } catch (e) { console.error("알림 초기화 처리 실패", e); }
+    }
     const client = createStompClient();
 
     const connectSocket = () => {
         client.subscribe('/user/queue/notification', (message) => {
             const data = JSON.parse(message.body);
-            setNotifications(prev => [{ ...data, isRead: false }, ...prev]);
-            console.log(data.boardid);
+            setNotifications(prev => [data, ...prev]);
+            console.log(data);
             setUnreadCount((count) => count + 1);
         });
     };
@@ -51,13 +62,13 @@ export default function Notification() {
         const notification = notifications[index];
 
         try {
-            if (!notification.isRead) {
+            if (notification.isRead == "NOTREAD") {
                 await axios.post(`${APIConfig}/notification/${notification.id}/read`, null, {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}`, },
                 });
 
                 const update = notifications.map((item, i) =>
-                    i === index ? { ...item, isRead: true } : item
+                    i === index ? { ...item, isRead:"READ"} : item
                 );
                 setNotifications(update);
             }
@@ -89,7 +100,11 @@ export default function Notification() {
     }
 
     useEffect(() => {
-        const readCount = notifications.filter(noti => noti.isRead).length;
+        init();
+    }, []);
+
+    useEffect(() => {
+        const readCount = notifications.filter(noti => noti.isRead == "READ").length;
         const totalUnread = notifications.length - readCount;
         setUnreadCount(totalUnread);
 
@@ -97,7 +112,7 @@ export default function Notification() {
             // 읽은 알림들만 필터링
             const readNotis = notifications
                 .map((noti, idx) => ({ ...noti, index: idx }))
-                .filter(noti => noti.isRead);
+                .filter(noti => noti.isRead == "READ");
 
             if (readNotis.length > 0) {
                 // 가장 오래된 알림 1개 삭제 (맨 마지막 읽은 항목)
@@ -109,7 +124,6 @@ export default function Notification() {
             }
         }
     }, [notifications]);
-
     return (
         <div className="relative inline-block">
             <button
@@ -157,7 +171,7 @@ export default function Notification() {
                                     <div
                                         key={index}
                                         onClick={() => notReadToRead(index)}
-                                        className={`p-2 cursor-pointer border-2 border-gray-300 rounded-md ${notification.isRead ? "bg-gray-300 text-gray-400" : "bg-white text-black"
+                                        className={`p-2 cursor-pointer border-2 border-gray-300 rounded-md ${notification.isRead == "READ" ? "bg-gray-300 text-gray-400" : "bg-white text-black"
                                             }`}
                                     >
                                         <div className="flex-1 w-full">
