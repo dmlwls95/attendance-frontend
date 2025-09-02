@@ -6,6 +6,9 @@ import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList,
 import { useNavigate } from "react-router-dom";
 import { useAttendanceStomp } from "../../hooks/useAttendanceStomp";
 
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 interface AttendanceSignal {
     type: | 'CLOCK_IN'
     | 'BREAK_OUT'
@@ -15,7 +18,21 @@ interface AttendanceSignal {
     at: Date;
 
 }
+
+const images = [
+    "/image.jpg",
+    "/image2.jpg",
+    "/image3.jpg",
+    "/image4.jpg",
+    "/image5.jpg",
+];
+
 export default function UserHomePage() {
+    const dayNames = ['(일)', '(월)', '(화)', '(수)', '(목)', '(금)', '(토)'];
+
+    const BOARD_ICON_SRC = "/boardicon.svg";
+    const CLOCK_ICON_SRC = "/Alarm.svg";
+
     const navigate = useNavigate();
     const [nowClock, SetNowClock] = useState<Date>(new Date());
     const [userAttendanceLog, SetUserAttendanceLog] = useState<AttendanceEventResponse[]>();
@@ -148,16 +165,54 @@ export default function UserHomePage() {
 
     }, [clockIn_out, outStart_end])
 
+
+    const [current, setCurrent] = useState(0);
+    // 자동 슬라이드 전환 (3초마다)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrent((prev) => (prev + 1) % images.length);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [images.length]);
+
     return (
         <div>
-            <br></br>
-            <hr className="border-2 border-withe" />
-            <br></br>
-   
-            <div className="flex w-full h-full mb-4 gap-3">
-                <div className="bg-gray-500 w-1/2 flex justify-center items-center rounded-xl">
-                    <div>
-                        <p className="font-bold text-7xl">{nowClock.toLocaleTimeString('ko-KR')}</p>
+            <div className="flex mb-4 gap-3">
+                <div className="w-1/2 flex justify-center items-center">
+                    <div className="flex flex-col w-full h-full justify-center items-center gap-2">
+                        <div className="flex justify-center items-center w-full h-2/3">
+                            <div className="relative w-full max-w-xl mx-auto overflow-hidden rounded-xl h-52">
+                                <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${current * 100}%)` }}>
+                                    {images.map((src, idx) => (
+                                        <img
+                                            key={idx}
+                                            src={src}
+                                            alt={`Slide ${idx}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ))}
+                                </div>
+                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                    {images.map((_, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`w-1 h-1 rounded-full transition-all duration-300 ${idx === current ? "bg-blue-500" : "bg-gray-400"}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center items-center w-full h-full bg-gray-500 font-bold text-4xl text-center rounded-xl gap-8">
+                            <img
+                                src={CLOCK_ICON_SRC}
+                                className="w-24 h-24 pt-2"
+                            />
+                            {dayjs().format("YYYY년 MM월 DD일")}
+                            {dayNames[dayjs().day()]}<br></br>
+                            {nowClock.toLocaleTimeString('ko-KR')}
+                        </div>
                     </div>
                 </div>
 
@@ -200,58 +255,65 @@ export default function UserHomePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-                <div className="card bg-base-100 shadow-sm card-border">
-                    <div className="card-body whitespace-nowrap p-1">
-                        {/* 헤더 */}
-                        <ol className="list-row font-semibold text-sm border-b py-2">
-                            <div className="grid grid-cols-9 gap-60 text-center">
-                                <div>날짜</div>
-                                <div>상태</div>
-                            </div>
-                        </ol>
-                        {
-                            userAttendanceLog?.map((record, idx) => (
-                                <ol className="list-row text-sm border-b py-2" key={idx}>
-                                    <div className="grid grid-cols-9 gap-60 text-center">
-                                        <div>{dayjs(record.occurredAt).format("YYYY-MM-DD HH:mm:ss")}</div>
-                                        <div>{record.eventType}</div>
-                                    </div>
-                                </ol>
-                            ))
-                        }
+            <div className="flex gap-2">
+                <div className="w-2/5 border-2 border-gray-500 rounded-xl p-5">
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-semibold">출퇴근 기록</h2>
                     </div>
-                </div>
-                <div className="card bg-base-100 shadow-sm card-border border-gray-500">
-                    <div className="card-body whitespace-nowrap p-1">
-                        {/* 헤더 */}
-                        <ol className="list-row font-semibold text-sm border-b py-2">
-                            <div className="grid grid-cols-3">
-                                <div>인기글</div>
-                                <div>제목</div>
-                                <div>등록일자</div>
-                            </div>
-                        </ol>
-                        {
-                            recentTopBoard?.map((record, idx) => (
-                                <ol className="list-row text-sm border-b py-2" key={idx}>
-                                    <div className="grid grid-cols-3">
-                                        <div>{record.id}</div>
-                                        <div>{record.title}</div>
-                                        {/*<button className="btn btn-link w-1/3 h-1 p-1" onClick={() => onClickBoardTitle(record.id, record.boardType)}>{record.title}</button>*/}
-                                        <div>{new Date(record.writeDate).toLocaleDateString("ko-KR")}</div>
-                                    </div>
-                                </ol>
-                            ))
-                        }
-                    </div>
+
+                    <ul className="font-semibold text-sm border-b p-5 ">
+                        <div className="flex">
+                            <div className="w-1/2 text-center">날짜</div>
+                            <div className="w-1/2 text-center pl-10">상태</div>
+                        </div>
+                    </ul>
+                    {
+                        userAttendanceLog?.map((record, idx) => (
+                            <ul className="text-sm border-b p-5" key={idx}>
+                                <div className="flex">
+                                    <div className="w-1/2 text-center">{dayjs(record.occurredAt).format("YYYY-MM-DD HH:mm:ss")}</div>
+                                    <div className="w-1/2 pl-16">{record.eventType}</div>
+                                </div>
+                            </ul>
+                        ))
+                    }
                 </div>
 
+                <div className="w-3/5 border-2 border-gray-500 rounded-xl p-5">
+                    <div className="flex items-center gap-2">
+                        <img
+                            src={BOARD_ICON_SRC}
+                            className="w-7 h-7"
+                        />
+                        <h2 className="text-xl font-semibold">사내 NEWS</h2>
+                    </div>
+
+                    <ul className="font-semibold text-sm border-b p-5">
+                        <div className="flex">
+                            <div className="w-1/6 text-center">번호</div>
+                            <div className="w-4/6 text-center">제목</div>
+                            <div className="w-1/6 text-center">등록일자</div>
+                        </div>
+                    </ul>
+                    {
+                        recentTopBoard?.map((record, idx) => (
+                            <ul className="text-sm border-b p-5" key={idx}>
+                                <div className="flex">
+                                    <div className="w-1/6 text-center">{record.id}</div>
+                                    <div
+                                        className="w-4/6 pl-10"
+                                        onClick={() => onClickBoardTitle(record.id, record.boardType)}
+                                    >
+                                        {record.title}
+                                    </div>
+                                    {/*<button className="btn btn-link w-1/3 h-1 p-1" onClick={() => onClickBoardTitle(record.id, record.boardType)}>{record.title}</button>*/}
+                                    <div className="w-1/6 pl-2">{new Date(record.writeDate).toLocaleDateString("ko-KR")}</div>
+                                </div>
+                            </ul>
+                        ))
+                    }
+                </div>
             </div>
-
-
         </div>
-
     );
-
 }
