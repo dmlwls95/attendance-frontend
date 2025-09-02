@@ -146,7 +146,7 @@ const UserMonthlySummary: React.FC = () => {
   const barTotal    = normalMin + overtimeMin + holidayMin + nightMin;
 
   return (
-    <div className="p-6">
+    <div>
       {/* ───── 헤더 (아이콘 + 제목) ───── */}
       <div className="flex items-center gap-2 mb-4">
         {iconOk ? (

@@ -63,8 +63,7 @@ const UserWeeklySummary: React.FC = () => {
 
 
   return (
-    <div className="rounded-xl shadow-sm p-5 mb-6">
-      {/* ───── 헤더 (아이콘 + 제목) ───── */}
+    <div className="rounded-xl shadow-sm">
       <div className="flex items-center gap-2 mb-4">
         {iconOk ? (
           <img
@@ -282,7 +281,7 @@ const UserWeeklySummary: React.FC = () => {
         <h2 className="text-xl font-semibold">지각 및 결근 현황</h2>
       </div>
 
-      <div className="flex gap-4 mb-6 h-[300px]">
+      <div className="flex gap-4 h-[300px]">
         <div className="bg-white rounded-xl p-4 w-2/5 h-full">
           <div className="flex items-center justify-center h-full gap-4">
             <div className="w-60 h-60">
