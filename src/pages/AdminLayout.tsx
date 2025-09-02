@@ -3,16 +3,15 @@ import NavMemberCard from "../components/NavMemberCard";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 import { TiWorld } from "react-icons/ti";
 
-export default function AdminLayout()
-{
-    return(
+export default function AdminLayout() {
+    return (
         <div className="flex flex-col h-screen w-full">
             <div className="navbar bg-base-100 shadow-sm">
                 <div className="navbar-start">
                     <div className="dropdown">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> 
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" /> 
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
                             </svg>
                         </div>
                         <ul
@@ -30,7 +29,7 @@ export default function AdminLayout()
                     <a className="btn btn-ghost text-xl">관리자 페이지</a>
 
                 </div>
-                
+
                 <div className="navbar-end">
                     <div className="dropdown">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
@@ -48,8 +47,12 @@ export default function AdminLayout()
                 </div>
             </div>
 
+            <br></br>
+            <hr className="border-2 border-withe" />
+            <br></br>
+
             {/* 하위 페이지 렌더링 영역 */}
-            <div className="w-full ">
+            <div className="w-full mx-auto">
                 <Outlet />
             </div>
         </div>

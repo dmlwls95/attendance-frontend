@@ -39,9 +39,12 @@ export default function UserLayout()
                     <NavMemberCard/>
                 </div> 
             </div>
-
+            <br></br>
+            <hr className="border-2 border-withe" />
+            <br></br>
+            
             {/* 하위 페이지 렌더링 영역 */}
-            <div className="w-full max-w-screen-lg mx-auto">
+            <div className="w-full mx-auto">
                 <Outlet />
             </div>
         </div>
