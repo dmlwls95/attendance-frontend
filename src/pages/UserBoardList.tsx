@@ -7,6 +7,8 @@ interface BoardPost {
   title: string;
   writer: string;
   writeDate: string;
+  recommendCount: number;   // 추가
+  commentCount: number;     // 추가
 }
 
 const BoardList: React.FC = () => {
@@ -29,7 +31,10 @@ const BoardList: React.FC = () => {
     if (!upperType) return;
     fetch(`${APIConfig}/user/userboard/list/byType?type=${upperType}&page=${currentPage}`)
       .then(res => { if (!res.ok) throw new Error('list fetch fail'); return res.json(); })
-      .then(data => { setPosts(data.list); setTotal(data.totalPage); })
+      .then(data => { 
+        setPosts(data.list); 
+        setTotal(data.totalPage); 
+      })
       .catch(console.error);
   }, [upperType, currentPage]);
 
@@ -37,7 +42,10 @@ const BoardList: React.FC = () => {
   const handleDelete = (id: number) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
     fetch(`${APIConfig}/user/userboard/delete/${id}`, { method: 'DELETE' })
-      .then(res => { if (!res.ok) throw new Error('delete fail'); setPosts(p => p.filter(v => v.id !== id)); })
+      .then(res => { 
+        if (!res.ok) throw new Error('delete fail'); 
+        setPosts(p => p.filter(v => v.id !== id)); 
+      })
       .catch(console.error);
   };
 
@@ -98,10 +106,11 @@ const BoardList: React.FC = () => {
           <thead>
             <tr className="bg-gray-500 text-sm">
               <th className="w-1/12 text-center">번호</th>
-              <th className="w-6/12 text-left">제목</th>
+              <th className="w-5/12 text-left">제목</th>
               <th className="w-1/12 text-center">작성자</th>
+              <th className="w-1/12 text-center">👍</th>      {/* 추가 */}
               <th className="w-2/12 text-center">작성일</th>
-              <th className="w-2/12 text-center">관리</th>
+              <th className="w-1/12 text-center">관리</th>
             </tr>
           </thead>
           <tbody>
@@ -109,8 +118,10 @@ const BoardList: React.FC = () => {
               posts.map((p, i) => (
                 <tr key={p.id}>
                   <td className="text-center">{p.id}</td>
-                  <td className="text-left cursor-pointer hover:underline" onClick={() => goDetail(p.id)}>{p.title}</td>
+                  <td className="text-left cursor-pointer hover:underline" onClick={() => goDetail(p.id)}>
+                  {p.title} ({p.commentCount})</td>
                   <td className="text-center">{p.writer}</td>
+                  <td className="text-center">{p.recommendCount}</td>     {/* 추가 */}
                   <td className="text-center">{p.writeDate?.substring(0, 10)}</td>
 
                   {/* ▶ 수정 / 삭제 버튼 */}
@@ -134,7 +145,7 @@ const BoardList: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-gray-500">
+                <td colSpan={7} className="py-8 text-center text-gray-500">
                   등록된 게시글이 없습니다.
                 </td>
               </tr>

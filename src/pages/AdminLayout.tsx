@@ -1,6 +1,8 @@
 import { Outlet } from "react-router-dom";
 import NavMemberCard from "../components/NavMemberCard";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
+// 수정 코드
+//import "flag-icons/css/flag-icons.min.css";
 import { TiWorld } from "react-icons/ti";
 
 export default function AdminLayout() {

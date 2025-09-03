@@ -53,3 +53,14 @@ export function isTokenExpired(token?: string | null): boolean {
   const nowSec = Math.floor(Date.now() / 1000);
   return obj.exp <= nowSec;
 }
+export function getNicknameFromToken(): string {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return "";
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.nickname || payload.name || payload.sub || "";
+  } catch (e) {
+    return "";
+  }
+}
