@@ -12,6 +12,7 @@ interface BoardPost {
 const BoardList: React.FC = () => {
 
   const BOARD_ICON_SRC = "/boardicon.svg";
+  const COMMUNITY_ICON_SRC = "/Community.svg";
 
   /* ───────── state ───────── */
   const [posts, setPosts] = useState<BoardPost[]>([]);
@@ -62,100 +63,217 @@ const BoardList: React.FC = () => {
 
   /* ───────── view ───────── */
   return (
-    <div className="mx-auto font-sans h-screen">
-
-      {/* 탭 메뉴 */}
-      <div className="tabs justify-center mb-8">
-        <button className={`tab tab-bordered text-2xl ${upperType === 'NOTICE' && 'tab-active font-semibold'}`}
-          onClick={() => navigate('/user/userboard/notice')}>공지사항</button>
-        <button className={`tab tab-bordered text-2xl ${upperType === 'FREE' && 'tab-active font-semibold'}`}
-          onClick={() => navigate('/user/userboard/free')}>자유게시판</button>
-        <button className={`tab tab-bordered text-2xl ${upperType === 'SUGGEST' && 'tab-active font-semibold'}`}
-          onClick={() => navigate('/user/userboard/suggest')}>건의사항</button>
+    <div className="flex flex-col gap-7">
+      <div className="bg-gray-500 text-white flex justify-start items-center w-full h-16 rounded-xl gap-4">
+        <img
+          src={COMMUNITY_ICON_SRC}
+          className="w-10 h-10 ml-6"
+        />
+        <p className="text-2xl font-bold">사내 커뮤니티</p>
       </div>
 
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center justify-between gap-2 pl-2">
-          <img
-            src={BOARD_ICON_SRC}
-            className="w-7 h-7"
-          />
-          <h2 className="text-2xl font-bold">{boardTypeName()}</h2>
+      <div className="flex flex-l h-full gap-4">
+
+        {/* 탭 메뉴 */}
+        <div className="w-1/5 border-2 border-gray-500 rounded-xl p-6">
+          <div className="flex flex-col tabs gap-4">
+            <div className="text-2xl font-semibold text-center">
+              게시판
+            </div>
+            <hr className="border-1 border-gray-500" />
+            <ul className="list-disc list-outside pl-6 space-y-3">
+              <li>
+                <button
+                  className={`tab tab-bordered text-xl hover:border-transparent ${upperType === 'NOTICE' && 'tab-active font-semibold'}`}
+                  onClick={() => navigate('/user/userboard/notice')}
+                >
+                  공지사항
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`tab tab-bordered text-xl hover:border-transparent ${upperType === 'FREE' && 'tab-active font-semibold'}`}
+                  onClick={() => navigate('/user/userboard/free')}
+                >
+                  자유게시판
+                </button>
+              </li>
+              <li>
+                <button
+                  className={`tab tab-bordered text-xl hover:border-transparent ${upperType === 'SUGGEST' && 'tab-active font-semibold'}`}
+                  onClick={() => navigate('/user/userboard/suggest')}
+                >
+                  건의사항
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
-        {/* ▶ 글쓰기 버튼 (무채색) */}
-        <button
-          className="btn btn-sm border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
-          onClick={goWrite}
-        >
-          글쓰기
-        </button>
-      </div>
 
-      {/* 테이블 */}
-      <div className="overflow-x-auto rounded-box shadow">
-        <table className="table">
-          <thead>
-            <tr className="bg-gray-500 text-sm">
-              <th className="w-1/12 text-center">번호</th>
-              <th className="w-6/12 text-left">제목</th>
-              <th className="w-1/12 text-center">작성자</th>
-              <th className="w-2/12 text-center">작성일</th>
-              <th className="w-2/12 text-center">관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {posts.length ? (
-              posts.map((p, i) => (
-                <tr key={p.id}>
-                  <td className="text-center">{p.id}</td>
-                  <td className="text-left cursor-pointer hover:underline" onClick={() => goDetail(p.id)}>{p.title}</td>
-                  <td className="text-center">{p.writer}</td>
-                  <td className="text-center">{p.writeDate?.substring(0, 10)}</td>
-
-                  {/* ▶ 수정 / 삭제 버튼 */}
-                  <td className="px-2">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        className="btn btn-xs border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
-                        onClick={() => goEdit(p.id)}
-                      >
-                        수정
-                      </button>
-                      <button
-                        className="btn btn-xs border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
-                        onClick={() => handleDelete(p.id)}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="py-8 text-center text-gray-500">
-                  등록된 게시글이 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* 페이지네이션 */}
-      <div className="w-full flex justify-center mt-8">
-        <div className="join">
-          {Array.from({ length: totalPage }, (_, i) => (
+        {/* 헤더 */}
+        <div className="w-4/5 border-2 border-gray-500 rounded-xl p-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between gap-2 pl-2">
+              <img
+                src={BOARD_ICON_SRC}
+                className="w-7 h-7"
+              />
+              <p className="text-2xl font-bold">{boardTypeName()}</p>
+            </div>
+            {/* ▶ 글쓰기 버튼 (무채색) */}
             <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              className={`join-item btn btn-xs border border-gray-400 text-gray-700 px-3
+              className="btn btn-sm border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
+              onClick={goWrite}
+            >
+              글쓰기
+            </button>
+          </div>
+
+          {/* 테이블 */}
+          <div className="overflow-x-auto border-2 border-gray-500 rounded-box shadow min-h-[540px]">
+            <table className="table">
+              <thead>
+                <tr className="bg-gray-500 text-white text-sm">
+                  <th className="w-1/12 text-center">번호</th>
+                  <th className="w-5/12 text-left">제목</th>
+                  <th className="w-2/12 text-center">작성자</th>
+                  <th className="w-2/12 text-center">작성일</th>
+                  <th className="w-2/12 text-center">관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {posts.length ? (
+                  posts.map((p, i) => (
+                    <tr key={p.id}>
+                      <td className="text-center">{p.id}</td>
+                      <td className="text-left cursor-pointer hover:underline" onClick={() => goDetail(p.id)}>{p.title}</td>
+                      <td className="text-center">{p.writer}</td>
+                      <td className="text-center">{p.writeDate?.substring(0, 10)}</td>
+
+                      {/* ▶ 수정 / 삭제 버튼 */}
+                      <td className="px-2">
+                        <div className="flex justify-center gap-2">
+                          <button
+                            className="btn btn-xs border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
+                            onClick={() => goEdit(p.id)}
+                          >
+                            수정
+                          </button>
+                          <button
+                            className="btn btn-xs border border-gray-400 text-gray-700 hover:bg-gray-200 hover:border-gray-500"
+                            onClick={() => handleDelete(p.id)}
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-gray-500">
+                      등록된 게시글이 없습니다.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* 페이지네이션 기존*/}
+          {/* <div className="w-full flex justify-center mt-8">
+          <div className="join">
+            {Array.from({ length: totalPage }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`join-item btn btn-xs border border-gray-400 text-gray-700 px-3
                     hover:bg-gray-200 hover:border-gray-500
                     ${currentPage === i && '!bg-gray-300 !border-gray-500'}`}>
-              {i + 1}
-            </button>
-          ))}
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        </div> */}
+
+          {/* 페이지네이션 수정*/}
+          <div className="w-full flex justify-center items-center pt-5">
+            <div className="join">
+              {(() => {
+                const pageBlock = 5;
+                const blockIndex = Math.floor(currentPage / pageBlock);
+                const startPage = blockIndex * pageBlock;
+                const endPage = Math.min(startPage + pageBlock, totalPage);
+
+                const buttons = [];
+
+                // 맨 앞으로
+                buttons.push(
+                  <button
+                    key="first"
+                    onClick={() => setCurrent(0)}
+                    className="join-item btn btn-xs border border-gray-400 text-gray-500 hover:border-transparent"
+                  >
+                    {'<<'}
+                  </button>
+                );
+
+                // 이전 버튼
+                if (startPage > 0) {
+                  buttons.push(
+                    <button
+                      key="prev"
+                      onClick={() => setCurrent(startPage - 1)}
+                      className="join-item btn btn-xs border border-gray-400 text-gray-500 hover:border-gray-500"
+                    >
+                      {'<'}
+                    </button>
+                  );
+                }
+
+                // 현재 block의 페이지 번호 버튼들
+                for (let i = startPage; i < endPage; i++) {
+                  buttons.push(
+                    <button
+                      key={i}
+                      onClick={() => setCurrent(i)}
+                      className={`join-item btn btn-xs border border-gray-400 text-gray-500 px-3 hover:bg-gray-200 hover:border-gray-500
+                    ${currentPage === i ? '!bg-gray-300 !border-gray-500 font-semibold' : ''}`}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                }
+
+                // 다음 버튼
+                if (endPage < totalPage) {
+                  buttons.push(
+                    <button
+                      key="next"
+                      onClick={() => setCurrent(endPage)}
+                      className="join-item btn btn-xs border border-gray-400 text-gray-500 hover:border-gray-500"
+                    >
+                      {'>'}
+                    </button>
+                  );
+                }
+
+                //맨 뒤로
+                buttons.push(
+                  <button
+                    key="last"
+                    onClick={() => setCurrent(totalPage - 1)}
+                    className="join-item btn btn-xs border border-gray-400 text-gray-500 hover:border-gray-500"
+                  >
+                    {'>>'}
+                  </button>
+                );
+                return buttons;
+              })()}
+            </div>
+          </div>
+
+
         </div>
       </div>
     </div>
