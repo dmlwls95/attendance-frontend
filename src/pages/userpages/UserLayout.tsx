@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import NavMemberCard from "../../components/NavMemberCard";
 import Notification from "../../components/Notification";
 
@@ -29,9 +29,9 @@ export default function UserLayout() {
                 </div>
 
                 <div className="navbar-center">
-                    <a className="btn btn-ghost text-xl">
+                    <Link to="/user/home" className="btn btn-ghost text-xl">
                         <img src={MAIN_ICON_SRC} alt="메인 아이콘" className="w-40 h-20" />
-                    </a>
+                    </Link>
                 </div>
                 <div className="navbar-end flex items-center gap-3">
                     <Notification />
@@ -40,25 +40,23 @@ export default function UserLayout() {
             </div>
             <br></br>
             <hr className="border-2 border-withe" />
-            <br></br>
-            <br></br>
 
             {/* 하위 페이지 렌더링 영역 */}
-            <div className="w-full mx-auto">
+            <div className="w-full mx-auto pt-8 pb-8">
                 <Outlet />
             </div>
 
-            <br></br>
-            <br></br>
             <hr className="border-2 border-withe" />
-            <div className="flex m-2">
-                <div className="flex justify-center items-center w-2/5 pr-28">
+            <div className="flex pb-5 pt-4">
+                <div className="flex justify-start items-center w-2/5 pl-16">
                     <img src={MAIN_ICON_SRC} className="w-32 h-15" />
                 </div>
-                <div className="flex justify-end items-center w-full text-sm text-gray-500">
+                <div className="flex justify-end items-center w-full text-base text-gray-500">
                     GLOBAL-IN IT PROJECT | 글로벌인 IT 프로젝트 | グローバルン IT プロジェクト
                 </div>
             </div>
+            <hr className="border-1 border-gray-500" />
+            <div className="text-center text-gray-500 pt-5 pb-6 mb-3">@Copyright 2025. IT 3기 3팀. All rights reserved.</div>
         </div>
     )
 }
