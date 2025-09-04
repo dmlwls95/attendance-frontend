@@ -39,10 +39,10 @@ export default function UserHomePage() {
     const [recentTopBoard, SetRecentTopBoard] = useState<BoardResponse[]>();
 
     const [hasAlreadyChecked, SetHasAlreadyChecked] = useState<boolean>();
-    const [clockIn_out, SetClockIn_Out] = useState<boolean>(false);
+    const [clockIn_out, SetClockIn_Out] = useState<boolean>();
 
     const [hasOutingStarted, SetHasOutingStarted] = useState<boolean>();
-    const [outStart_end, SetOutStart_End] = useState<boolean>(false);
+    const [outStart_end, SetOutStart_End] = useState<boolean>();
 
     //시계 설정
     useEffect(() => {
@@ -86,6 +86,7 @@ export default function UserHomePage() {
         (async () => {
             const res = await hasCheckedInToday();
             SetHasAlreadyChecked(res);
+            SetClockIn_Out(res);
             console.log("clokcIn : ", res)
         })();
     }, [])
@@ -94,6 +95,7 @@ export default function UserHomePage() {
         (async () => {
             const res = await hasBreakOut();
             SetHasOutingStarted(res);
+            SetOutStart_End(res);
             console.log("outing : ", res)
         })();
     }, [])
@@ -120,7 +122,7 @@ export default function UserHomePage() {
             } finally {
                 const checked = await hasCheckedInToday();
                 SetHasAlreadyChecked(checked);
-                SetClockIn_Out(prev => !prev);
+                SetClockIn_Out(true);
             }
         })();
     }
@@ -130,7 +132,7 @@ export default function UserHomePage() {
             try {
                 await postCheckOut();
             } finally {
-                SetClockIn_Out(prev => !prev);
+                SetClockIn_Out(false);
             }
         })();
     }
@@ -143,7 +145,7 @@ export default function UserHomePage() {
             } finally {
                 const checked = await hasBreakOut();
                 SetHasOutingStarted(checked);
-                SetOutStart_End(prev => !prev);
+                SetOutStart_End(true);
             }
         })();
     }
@@ -154,7 +156,7 @@ export default function UserHomePage() {
             try {
                 await postOutingEnd();
             } finally {
-                SetOutStart_End(prev => !prev);
+                SetOutStart_End(false);
             }
         })();
     }
@@ -162,6 +164,8 @@ export default function UserHomePage() {
     useEffect(() => {
         console.log("clockIn_Out : ", clockIn_out)
         console.log("outStart_end : ", outStart_end)
+        //localStorage.setItem('clockIn_out', clockIn_out.toString());
+        //localStorage.setItem('outStart_end', outStart_end.toString());
 
     }, [clockIn_out, outStart_end])
 
@@ -189,7 +193,7 @@ export default function UserHomePage() {
                                             key={idx}
                                             src={src}
                                             alt={`Slide ${idx}`}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain"
                                         />
                                     ))}
                                 </div>
@@ -228,7 +232,7 @@ export default function UserHomePage() {
 
                     <button
                         className="btn btn-error h-40 w-full font-bold text-4xl rounded-xl"
-                        onClick={clockIn_out === true ? onClickClockOut : undefined}
+                        onClick={hasAlreadyChecked === true ? onClickClockOut : undefined}
                         disabled={clockIn_out === false}
                     >
                         <FaMoon />퇴근
@@ -307,7 +311,7 @@ export default function UserHomePage() {
                                         {record.title}
                                     </div>
                                     {/*<button className="btn btn-link w-1/3 h-1 p-1" onClick={() => onClickBoardTitle(record.id, record.boardType)}>{record.title}</button>*/}
-                                    <div className="w-1/6 pl-2">{new Date(record.writeDate).toLocaleDateString("ko-KR")}</div>
+                                    <div className="w-1/6 pl-5">{new Date(record.writeDate).toLocaleDateString("ko-KR")}</div>
                                 </div>
                             </ul>
                         ))
