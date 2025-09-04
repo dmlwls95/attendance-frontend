@@ -80,7 +80,7 @@ export default function Notification() {
     const openNoticeWindow = (board_id: number) => {
 
         window.open(
-            `/user/userboard/detail/${board_id}/notice`,
+            `/userboard/detail/${board_id}/notice`,
             '_blank',
             'width=600,height=900,left=100,top=100'
         );

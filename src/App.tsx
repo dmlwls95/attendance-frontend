@@ -27,9 +27,8 @@ function App() {
         {/* ───────── 로그인 ───────── */}
         <Route path="/" element={<LoginPage />} />
 
-
         <Route
-          path="/user/userboard/detail/:id/:type"
+          path="/userboard/detail/:id/:type"
           element={
             <ProtectedRoute requiredRole="USER">
               <BoardDetail />
