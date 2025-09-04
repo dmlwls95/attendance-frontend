@@ -37,33 +37,48 @@ export async function fetchAttendanceHistoryOfMine(from: string, to: string): Pr
     return await response.json();
 }
 
-export async function fetchAttendanceHistoryExportCsv(from: string, to: string) {
-    try {
-        const token = getAuthToken();
+//csv
+/**
+ * 내 근태 이력 CSV 다운로드
+ */
+export async function fetchAttendanceHistoryExportCsv(start: string, end: string) {
+  const token = getAuthToken();
 
-        const response = await fetch(
-            `${APIConfig}/user/attendancehistory/export?from=${from}&to=${to}`, {
-                method: "GET",
-                headers: {
-                    "Authorization":`Bearer ${token}`
-                },
-                credentials: "include"
-            }
-        )
-
-        if(!response.ok)
-        {
-            throw new Error("조회 실패");
-        }
-
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `attendance_${from}${to}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error(error);
+  const res = await fetch(
+    `${APIConfig}/attendance/export?start=${start}&end=${end}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "text/csv",
+        Authorization: `Bearer ${token}`, // 세션이 아니라 JWT면 필요
+      },
+      credentials: "include", // 세션 방식이면 꼭 필요
     }
+  );
+
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`CSV 다운로드 실패: ${res.status} ${t}`);
+  }
+
+  // 서버에서 내려준 Content-Disposition 헤더에서 파일명 파싱
+  let filename = `attendance_${start}_${end}.csv`;
+  const cd = res.headers.get("Content-Disposition") || res.headers.get("content-disposition");
+  if (cd) {
+    const matchStar = /filename\*\s*=UTF-8''([^;]+)/i.exec(cd);
+    const match = /filename\s*=\s*"(.*?)"/i.exec(cd);
+    if (matchStar) filename = decodeURIComponent(matchStar[1]);
+    else if (match) filename = match[1];
+  }
+
+  // blob → 다운로드
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }

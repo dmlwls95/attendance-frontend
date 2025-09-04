@@ -134,7 +134,7 @@ export default function UserAttendanceHistory()
                 </div>
                 <h3 className="text-xl font-bold text-center flex-1">근무기록</h3>
                 <div className="flex items-center gap-2">
-                    <button className="btn btn-ghost btn-sm" disabled onClick={handleExport}>csv 다운로드</button>
+                    <button className="btn btn-ghost btn-sm" onClick={handleExport}>csv 다운로드</button>
                     <button className="btn btn-primary btn-sm" onClick={onDataChanged}>조회</button>
                 </div>
                 </div>
