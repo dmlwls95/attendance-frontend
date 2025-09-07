@@ -365,12 +365,21 @@ export default function UserManagement() {
     }
     try{
       const data = await deleteUserByEmpno(empno);
+      
+      if (data.success) {
+        alert("삭제 완료");// ✅ 삭제 성공 → 목록 새로고침
+        updateScreenData(); // 또는 updateScreenData(), getUsersList() 등 너희 프로젝트 함수명에 맞게
+    } else {
+      alert("삭제 실패: " + result.message);
+    }
+
       deleteModal.current?.close();
       setRegiResMsg(data);
       updateScreenData();
 
     }catch(e){
       console.error(e);
+      alert("삭제 중 오류 발생");
       setRegiResMsg({ success : false, message: "알 수 없는 사원"})
     }
   }
