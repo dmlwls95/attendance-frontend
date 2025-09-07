@@ -51,6 +51,14 @@ export default function AttendanceHistory() {
   const onClickFetch = async (overrideUser?: UserResponse | null) => {
     if (!selectedFrom || !selectedTo) return;
 
+    // 날짜 유효성 검사 추가
+    const fromDate = new Date(selectedFrom);
+    const toDate = new Date(selectedTo);
+
+    if (fromDate > toDate) {
+      alert("시작일은 종료일보다 이전이어야 합니다.");
+      return;
+    }
     const target = overrideUser === undefined ? user : overrideUser;
 
     const data = target
@@ -423,7 +431,7 @@ function SelectBox({
           onChange(e.target.value === "" ? "" : Number(e.target.value))
         }
       >
-        <option value="">00</option>
+        <option value="" disabled>{`${label} 선택`}</option>
         {options.map((n) => (
           <option key={n} value={n}>
             {String(n).padStart(2, "0")}
