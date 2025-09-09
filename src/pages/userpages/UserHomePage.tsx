@@ -6,8 +6,6 @@ import { type BoardResponse, getRecentAttendanceRecord, getRecommendedBoardList,
 import { useNavigate } from "react-router-dom";
 import { useAttendanceStomp } from "../../hooks/useAttendanceStomp";
 
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 
 interface AttendanceSignal {
     type: | 'CLOCK_IN'
