@@ -90,7 +90,7 @@ const BoardList: React.FC = () => {
           </thead>
           <tbody>
             {posts.length ? (
-              posts.map((p, i) => (
+              posts.map((p) => (
                 <tr key={p.id}>
                   <td className="text-center">{p.id}</td>
                   <td className="cursor-pointer hover:underline" onClick={() => goDetail(p.id)}>{p.title}</td>

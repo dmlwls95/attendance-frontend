@@ -370,7 +370,7 @@ export default function UserManagement() {
         alert("삭제 완료");// ✅ 삭제 성공 → 목록 새로고침
         updateScreenData(); // 또는 updateScreenData(), getUsersList() 등 너희 프로젝트 함수명에 맞게
     } else {
-      alert("삭제 실패: " + result.message);
+      alert("삭제 실패: " + data.message);
     }
 
       deleteModal.current?.close();

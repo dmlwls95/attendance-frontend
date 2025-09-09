@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import dayjs from "dayjs"
-import isoWeek from 'dayjs/plugin/isoWeek';
 import { getWeeklyData, type WeeklyDashboardResponse, type DayOfWeekResponse } from "../../services/UserWeeklySummaryService";
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = {
   chart: {
